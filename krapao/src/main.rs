@@ -5,6 +5,7 @@ extern crate log;
 
 mod repo;
 mod err;
+mod env;
 
 fn setup() -> Result<()> {
     if std::env::var("RUST_LOG").is_err() {
@@ -22,6 +23,7 @@ fn setup() -> Result<()> {
 
 fn main() -> Result<()> {
     setup()?;
+    let env = env::load_env()?;
 
     Ok(())
 }
