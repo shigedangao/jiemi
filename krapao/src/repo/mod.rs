@@ -3,17 +3,18 @@ use crate::env::Env;
 use self::config::{Credentials, GitConfig};
 
 mod config;
+pub mod fetch;
 
 /// Initialize the git repository handler
 /// 
 /// # Arguments
 /// * `env` - &Env
-pub fn initialize_git(env: &Env) -> Result<(), Error> {
+pub fn initialize_git(env: &Env) -> Result<GitConfig, Error> {
     // retrieve the environment variable for git credentials
     let credentials = Credentials::new(env);
 
-    GitConfig::new(credentials, &env.repository, &env.target)?
-        .init_repository()?;
+    let config = GitConfig::new(credentials, &env.repository, &env.target)?;
+    config.init_repository()?;
 
-    Ok(())
+    Ok(config)
 }

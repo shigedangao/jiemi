@@ -6,7 +6,10 @@ pub enum Error {
     EmptyRepoURI,
     MalformattedURI,
     Clone(String),
-    Config(String)
+    Config(String),
+    Pull(String),
+    RefreshDuration,
+    MaxPullRetry
 }
 
 impl std::fmt::Display for Error {
@@ -16,7 +19,10 @@ impl std::fmt::Display for Error {
             Error::EmptyRepoURI => write!(f, "Unable to clone repository. Url is empty"),
             Error::MalformattedURI => write!(f, "Repository URL is malformatted"),
             Error::Clone(msg) => write!(f, "Error while cloning repository {msg}"),
-            Error::Config(msg) => write!(f, "Unable to parse the configuration spec to bootstrap service {msg}")
+            Error::Config(msg) => write!(f, "Unable to parse the configuration spec to bootstrap service {msg}"),
+            Error::Pull(msg) => write!(f, "Unable to pull repository changes {msg}"),
+            Error::RefreshDuration => write!(f, "Refresh interval is inferior to 180 seconds / 3 min"),
+            Error::MaxPullRetry => write!(f, "Failed to refresh repository after retrying 20 times")
         }
     }
 }

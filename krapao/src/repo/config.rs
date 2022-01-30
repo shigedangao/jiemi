@@ -4,10 +4,9 @@ use crate::err::Error;
 use crate::helper;
 use crate::env::Env;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Credentials {
     Token(String, String),
-    // @TODO implement ssh, hopefully without braking mine local
     Ssh(String),
     Empty
 }
@@ -37,7 +36,7 @@ impl Credentials {
     }
 } 
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct GitConfig {
     auth_method: Credentials,
     repo_uri: String,
@@ -77,6 +76,11 @@ impl GitConfig {
        self.clone_repository()
     }
 
+    /// Build the url which will be use by the git command
+    /// to clone the target repository
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
     fn build_clone_uri(&self) -> Result<String, Error> {
         match &self.auth_method {
             Credentials::Token(username, token) => {
@@ -129,6 +133,25 @@ impl GitConfig {
         }
 
         info!("Repository has been clone in the path {}", self.repo_uri);
+
+        Ok(())
+    }
+
+    /// Pull repository with the rebase option. Though we won't make any
+    /// kind of changes to the original files
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    pub fn pull(&self) -> Result<(), Error> {
+        let status = Command::new("git")
+            .arg("pull")
+            .arg("--rebase")
+            .status()?;
+
+        if !status.success() {
+            error!("Fail to pull repository");
+            return Err(Error::Pull(status.to_string()));
+        }
 
         Ok(())
     }

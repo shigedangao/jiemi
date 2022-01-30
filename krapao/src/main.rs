@@ -28,7 +28,8 @@ fn main() -> Result<()> {
     let env = env::load_env()?;
 
     // initialize the repository handler
-    repo::initialize_git(&env)?;
+    let handler = repo::initialize_git(&env)?;
+    repo::fetch::watch_repository(handler, 180)?;
 
     Ok(())
 }
