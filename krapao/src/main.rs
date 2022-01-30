@@ -6,7 +6,9 @@ extern crate log;
 mod repo;
 mod err;
 mod env;
+mod helper;
 
+/// Setup different logging & debugging services
 fn setup() -> Result<()> {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "debug");
@@ -24,6 +26,9 @@ fn setup() -> Result<()> {
 fn main() -> Result<()> {
     setup()?;
     let env = env::load_env()?;
+
+    // initialize the repository handler
+    repo::initialize_git(&env)?;
 
     Ok(())
 }
