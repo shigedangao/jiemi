@@ -1,0 +1,35 @@
+apiVersion: jiemi/v1alpha1
+kind: Decryptor
+metadata:
+  name: <name>
+  namespace: <namespace>
+spec:
+  provider:
+    gcp:
+      accountId:
+        secretName: <name>
+        key: <key>
+        literal: <key>
+    aws:
+      accountId:
+        secretName: <name>
+        key: <key>
+        literal: <key>
+  source:
+    repository:
+      url: <repo url>
+      credentials:
+        username:
+          secretName: <name>
+          key: <key>
+          literal: <value>
+        token:
+          secretName: <name>
+          key: <key>
+          literal: <value>
+        ssh:
+          secretName: <name>
+          key: <ssh value>
+          literal: <value>
+    filename: <file to decrypt>
+    
