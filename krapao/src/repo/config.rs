@@ -142,8 +142,12 @@ impl GitConfig {
     /// 
     /// # Arguments
     /// * `&self` - &Self
-    pub fn pull(&self) -> Result<(), Error> {
+    /// * `target` - String
+    pub fn pull(&self, target: String) -> Result<(), Error> {
+        info!("Pulling change from upstream");
         let status = Command::new("git")
+            .arg("-C")
+            .arg(target)
             .arg("pull")
             .arg("--rebase")
             .status()?;
@@ -153,6 +157,7 @@ impl GitConfig {
             return Err(Error::Pull(status.to_string()));
         }
 
+        info!("Local repository cache has been updated");
         Ok(())
     }
 }
@@ -172,6 +177,10 @@ mod tests {
         ).unwrap();
         
         assert!(handle.init_repository().is_ok());
+
+        // pull the repository
+        let res = handle.pull("../../test".to_owned());
+        assert!(res.is_ok());
     }
 
     #[test]

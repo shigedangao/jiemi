@@ -9,6 +9,7 @@ const GIT_TOKEN: &str = "GIT_TOKEN";
 const GIT_REPOSITORY: &str = "GIT_REPOSITORY";
 const GIT_REPO_TARGET: &str = "GIT_CLONE_TARGET";
 const GIT_SSH_KEY: &str = "GIT_SSH_KEY";
+const SYNC_INTERVAL: &str = "SYNC_INTERVAL";
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Env {
@@ -21,7 +22,9 @@ pub struct Env {
     #[serde(rename(deserialize = "GIT_CLONE_TARGET"))]
     pub target: String,
     #[serde(rename(deserialize = "GIT_SSH_KEY"))]
-    pub ssh: Option<String>
+    pub ssh: Option<String>,
+    #[serde(rename(deserialize = "SYNC_INTERVAL"))]
+    pub sync_interval: Option<u64>
 }
 
 impl Env {
@@ -63,16 +66,23 @@ impl Env {
     /// * `&self` - &Env
     fn load_os_env(&self) -> Result<Env, Error> {
         info!("Loading OS environment variable");
+        let sync_interval = match env::var(SYNC_INTERVAL).ok() {
+            Some(s) => s.parse::<u64>().ok(),
+            None => None
+        };
+
         Ok(Env {
-            username: Some(env::var(GIT_USERNAME)?),
-            token: Some(env::var(GIT_TOKEN)?),
+            username: env::var(GIT_USERNAME).ok(),
+            token: env::var(GIT_TOKEN).ok(),
             repository: env::var(GIT_REPOSITORY)?,
             target: env::var(GIT_REPO_TARGET)?,
-            ssh: Some(env::var(GIT_SSH_KEY)?)
+            ssh: env::var(GIT_SSH_KEY).ok(),
+            sync_interval
         })
     }
 }
 
+/// Load environment variables
 pub fn load_env() -> Result<Env, Error> {
     info!("Loading environment variable...");
     Env::new().set_env()

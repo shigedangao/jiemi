@@ -1,4 +1,4 @@
-use std::{fmt::write, ffi::OsString};
+use std::ffi::OsString;
 
 #[derive(Debug, PartialEq)]
 pub enum Error {

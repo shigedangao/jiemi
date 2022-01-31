@@ -3,7 +3,7 @@ use crate::env::Env;
 use self::config::{Credentials, GitConfig};
 
 mod config;
-pub mod fetch;
+pub mod watch;
 
 /// Initialize the git repository handler
 /// 

@@ -29,7 +29,11 @@ fn main() -> Result<()> {
 
     // initialize the repository handler
     let handler = repo::initialize_git(&env)?;
-    repo::fetch::watch_repository(handler, 180)?;
+    repo::watch::watch_repository(
+        handler,
+        env.sync_interval,
+        env.target
+    )?;
 
     Ok(())
 }
