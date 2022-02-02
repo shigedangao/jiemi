@@ -1,4 +1,4 @@
-apiVersion: jiemi/v1alpha1
+apiVersion: jiemi.cr/v1alpha1
 kind: Decryptor
 metadata:
   name: <name>
@@ -6,15 +6,13 @@ metadata:
 spec:
   provider:
     gcp:
-      accountId:
-        secretName: <name>
-        key: <key>
-        literal: <key>
+      secretName: <name>
+      key: <key>
+      literal: <key>
     aws:
-      accountId:
-        secretName: <name>
-        key: <key>
-        literal: <key>
+      secretName: <name>
+      key: <key>
+      literal: <key>
   source:
     repository:
       url: <repo url>
