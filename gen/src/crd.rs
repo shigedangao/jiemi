@@ -5,6 +5,9 @@ use kube::{
     CustomResourceExt
 };
 
+// The implementation is based on
+//
+//  - https://github.com/kube-rs/kube-rs/blob/bf3b248f0c96b229863e0bff510fdf118efd2381/examples/crd_apply.rs
 #[derive(Debug, CustomResource, Serialize, Deserialize, Clone, JsonSchema)]
 #[kube(group = "jiemi.cr", version = "v1alpha1", kind = "Decryptor", namespaced)]
 pub struct DecryptorSpec {
@@ -34,7 +37,7 @@ struct Source {
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 struct Repository {
     url: String,
-    credentials: RepositoryCredentials
+    credentials: Option<RepositoryCredentials>
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]

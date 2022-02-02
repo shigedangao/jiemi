@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use color_eyre::Result;
 
-mod crd;
+pub mod crd;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {

@@ -1,12 +1,13 @@
-use color_eyre::Result;
-
 #[macro_use]
 extern crate log;
 
+mod controller;
+mod error;
+
 /// Setup different logging & debugging services
-fn setup() -> Result<()> {
+fn setup() -> color_eyre::Result<()> {
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "debug");
+        std::env::set_var("RUST_LOG", "miwen=info");
     }
 
     if std::env::var("RUST_BACKTRACE").is_err() {
@@ -18,9 +19,10 @@ fn setup() -> Result<()> {
     color_eyre::install()
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup()?;
-    println!("Hello, world!");
+    controller::boostrap_controller().await?;
 
     Ok(())
 }
