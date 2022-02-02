@@ -9,10 +9,16 @@ use kube::{
 //
 //  - https://github.com/kube-rs/kube-rs/blob/bf3b248f0c96b229863e0bff510fdf118efd2381/examples/crd_apply.rs
 #[derive(Debug, CustomResource, Serialize, Deserialize, Clone, JsonSchema)]
+#[kube(status = "DecryptorStatus")]
 #[kube(group = "jiemi.cr", version = "v1alpha1", kind = "Decryptor", namespaced)]
 pub struct DecryptorSpec {
     provider: Provider,
     source: Source
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
+pub struct DecryptorStatus {
+    pub message: String
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]

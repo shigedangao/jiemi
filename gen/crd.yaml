@@ -112,10 +112,19 @@ spec:
                 - provider
                 - source
               type: object
+            status:
+              nullable: true
+              properties:
+                message:
+                  type: string
+              required:
+                - message
+              type: object
           required:
             - spec
           title: Decryptor
           type: object
       served: true
       storage: true
-      subresources: {}
+      subresources:
+        status: {}
