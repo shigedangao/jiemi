@@ -1,0 +1,31 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: gcp-decryptor
+spec:
+  provider:
+    gcp:
+      secretName: gcp-service-account
+      key: sa
+  source:
+    repository:
+      url: https://github.com/shigedangao/uselesscli.git
+      credentials: {}
+    filename: foo.enc.yaml
+  # not to be fill by the end user
+  status:
+    history:
+      - deployedAt: <date>
+        id: <id>
+        revision: <commit sha>
+        filename: <filename targeted>
+        status: <sync|unsync|error>
+    current:
+      id: <id>
+      deployedAt: <date>
+      revision: <commit sha>
+      filename: <filename targeted>
+      status: <sync|unsync|error>
+      errorMessage: ""
+
+    

@@ -1,8 +1,13 @@
+use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+
 #[macro_use]
 extern crate log;
 
 mod controller;
 mod error;
+
+type State = Arc<Mutex<HashMap<String, i64>>>;
 
 /// Setup different logging & debugging services
 fn setup() -> color_eyre::Result<()> {
@@ -22,7 +27,9 @@ fn setup() -> color_eyre::Result<()> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup()?;
-    controller::boostrap_controller().await?;
+
+    let state = Arc::new(Mutex::new(HashMap::new()));
+    controller::boostrap_controller(state).await?;
 
     Ok(())
 }

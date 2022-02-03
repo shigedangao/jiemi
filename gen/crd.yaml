@@ -115,10 +115,67 @@ spec:
             status:
               nullable: true
               properties:
-                message:
-                  type: string
+                current:
+                  properties:
+                    deployed_at:
+                      type: string
+                    error_message:
+                      nullable: true
+                      type: string
+                    filename:
+                      type: string
+                    id:
+                      format: uint64
+                      minimum: 0.0
+                      type: integer
+                    revision:
+                      type: string
+                    status:
+                      enum:
+                        - Sync
+                        - Unsync
+                        - Error
+                      type: string
+                  required:
+                    - deployed_at
+                    - filename
+                    - id
+                    - revision
+                    - status
+                  type: object
+                history:
+                  items:
+                    properties:
+                      deployed_at:
+                        type: string
+                      error_message:
+                        nullable: true
+                        type: string
+                      filename:
+                        type: string
+                      id:
+                        format: uint64
+                        minimum: 0.0
+                        type: integer
+                      revision:
+                        type: string
+                      status:
+                        enum:
+                          - Sync
+                          - Unsync
+                          - Error
+                        type: string
+                    required:
+                      - deployed_at
+                      - filename
+                      - id
+                      - revision
+                      - status
+                    type: object
+                  nullable: true
+                  type: array
               required:
-                - message
+                - current
               type: object
           required:
             - spec

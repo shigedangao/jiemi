@@ -4,6 +4,9 @@ use kube::{
     CustomResource,
     CustomResourceExt
 };
+use status::DecryptorStatus;
+
+pub mod status;
 
 // The implementation is based on
 //
@@ -12,17 +15,12 @@ use kube::{
 #[kube(status = "DecryptorStatus")]
 #[kube(group = "jiemi.cr", version = "v1alpha1", kind = "Decryptor", namespaced)]
 pub struct DecryptorSpec {
-    provider: Provider,
-    source: Source
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
-pub struct DecryptorStatus {
-    pub message: String
+    pub provider: Provider,
+    pub source: Source
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
-struct Provider {
+pub struct Provider {
     gcp: Option<GenericConfig>,
     aws: Option<GenericConfig>
 }
@@ -35,9 +33,9 @@ struct GenericConfig {
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
-struct Source {
+pub struct Source {
     repository: Repository,
-    filename: String
+    pub filename: String
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]

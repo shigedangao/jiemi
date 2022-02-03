@@ -870,6 +870,7 @@ dependencies = [
  "k8s-openapi",
  "kube",
  "log",
+ "serde_json",
  "tokio",
 ]
 
