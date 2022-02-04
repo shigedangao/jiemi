@@ -11,4 +11,4 @@ spec:
     repository:
       url: https://github.com/shigedangao/uselesscli.git
       credentials: {}
-    filename: nana.enc.yaml
+    filename: dodo.enc.yaml

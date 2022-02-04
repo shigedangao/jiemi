@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 use std::string::ToString;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
+use chrono::Utc;
+use super::Decryptor;
 
 // constant
 const MAX_QUEUE_SIZE: usize = 10;
@@ -35,17 +37,15 @@ impl DecryptorStatus {
     /// # Arguments
     /// * `status` - SyncStatus
     /// * `err` - Option<String>
-    /// * `filename` - String
-    /// * `previous` - Option<DecryptorStatus>
     /// * `revision` - String
+    /// * `decryptor` - Decryptor
     pub fn new(
         status: SyncStatus,
-        err: Option<String> ,
-        filename: String,
-        previous: Option<DecryptorStatus>,
-        revision: String
+        err: Option<String>,
+        revision: String,
+        decryptor: Decryptor,
     ) -> Self {
-        let (history, previous_id) = match previous {
+        let (history, previous_id) = match decryptor.status {
             Some(mut prev) => {
                 prev.add_current_to_history();
                 (prev.history, prev.current.id)
@@ -53,12 +53,18 @@ impl DecryptorStatus {
             None => (Some(VecDeque::new()), 0 as u64)
         };
 
+        let filename = decryptor.spec.source.filename;
         DecryptorStatus {
             current: Status::new(status, revision, filename, err, previous_id),
             history
         }
     }
 
+    /// Update the history of the status by adding the current struct status
+    /// to the history. The current status will then be replaced with a new one...
+    /// 
+    /// # Arguments
+    /// * `&mut self` - Self
     fn add_current_to_history(&mut self) {
         if let Some(queue) = self.history.as_mut() {
             if queue.len() > MAX_QUEUE_SIZE {
@@ -67,10 +73,18 @@ impl DecryptorStatus {
 
             queue.push_back(self.current.clone());
         }
-    } 
+    }
 }
 
 impl Status {
+    /// Create a new Status
+    /// 
+    /// # Arguments
+    /// * `status` - SyncStatus
+    /// * `revision` - String
+    /// * `filename` - String
+    /// * `err` - Option<String>
+    /// * `previous_id` - u64
     fn new(
         status: SyncStatus,
         revision: String,
@@ -79,7 +93,7 @@ impl Status {
         previous_id: u64
     ) -> Self {
         Status {
-            deployed_at: "2022-10-10:15h30:05".to_owned(),
+            deployed_at: Utc::now().to_rfc3339().to_string(),
             id: previous_id + 1,
             revision,
             filename,
