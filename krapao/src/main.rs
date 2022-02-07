@@ -7,6 +7,8 @@ mod repo;
 mod err;
 mod env;
 mod helper;
+mod server;
+mod state;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {
@@ -23,17 +25,14 @@ fn setup() -> Result<()> {
     color_eyre::install()
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     setup()?;
-    let env = env::load_env()?;
+    // create the state
+    let state = state::create_state();
 
-    // initialize the repository handler
-    let handler = repo::initialize_git(&env)?;
-    repo::watch::watch_repository(
-        handler,
-        env.sync_interval,
-        env.target
-    )?;
+    // bootstrap the server
+    server::bootstrap_server(state).await?;
 
     Ok(())
 }

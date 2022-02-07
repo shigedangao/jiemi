@@ -1,0 +1,22 @@
+syntax = "proto3";
+package repository;
+
+service RepoService {
+    rpc setRepository(Payload) returns (Response);
+    rpc deleteRepository(Payload) returns (Response);
+}
+
+message Payload {
+    string url = 1;
+    optional Credentials cred = 2;
+}
+
+message Credentials {
+    optional string username = 1;
+    optional string token = 2;
+    optional string ssh = 3;
+}
+
+message Response {
+    bool done = 1;
+}

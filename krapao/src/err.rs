@@ -9,7 +9,8 @@ pub enum Error {
     Config(String),
     Pull(String),
     RefreshDuration,
-    MaxPullRetry
+    MaxPullRetry,
+    Server(String)
 }
 
 impl std::fmt::Display for Error {
@@ -22,7 +23,8 @@ impl std::fmt::Display for Error {
             Error::Config(msg) => write!(f, "Unable to parse the configuration spec to bootstrap service {msg}"),
             Error::Pull(msg) => write!(f, "Unable to pull repository changes {msg}"),
             Error::RefreshDuration => write!(f, "Refresh interval is inferior to 180 seconds / 3 min"),
-            Error::MaxPullRetry => write!(f, "Failed to refresh repository after retrying 20 times")
+            Error::MaxPullRetry => write!(f, "Failed to refresh repository after retrying 20 times"),
+            Error::Server(msg) => write!(f, "gRPC server error: {msg}")
         }
     }
 }
@@ -50,5 +52,11 @@ impl From<std::env::VarError> for Error {
 impl From<config::ConfigError> for Error {
     fn from(err: config::ConfigError) -> Self {
         Error::Config(err.to_string())
+    }
+}
+
+impl From<tonic::transport::Error> for Error {
+    fn from(err: tonic::transport::Error) -> Self {
+        Error::Server(err.to_string())
     }
 }

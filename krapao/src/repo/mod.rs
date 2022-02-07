@@ -2,7 +2,7 @@ use crate::err::Error;
 use crate::env::Env;
 use self::config::{Credentials, GitConfig};
 
-mod config;
+pub mod config;
 pub mod watch;
 
 /// Initialize the git repository handler

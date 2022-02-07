@@ -1,15 +1,8 @@
-use std::env;
 use config::{Config, File};
 use serde::Deserialize;
+use rand::Rng;
 use crate::err::Error;
-
-// constant
-const GIT_USERNAME: &str = "GIT_USERNAME";
-const GIT_TOKEN: &str = "GIT_TOKEN";
-const GIT_REPOSITORY: &str = "GIT_REPOSITORY";
-const GIT_REPO_TARGET: &str = "GIT_CLONE_TARGET";
-const GIT_SSH_KEY: &str = "GIT_SSH_KEY";
-const SYNC_INTERVAL: &str = "SYNC_INTERVAL";
+use crate::server::service::repo::proto::Payload;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Env {
@@ -33,20 +26,8 @@ impl Env {
         Env::default()
     }
 
-    /// Retrieve the environment variable from two sources
-    ///     - If exists. then use the file Env.toml
-    ///     - Use the OS environment variable
-    /// 
-    /// # Arguments
-    /// * `self` - Env
-    fn set_env(self) -> Result<Self, Error> {
-        match self.load_local_env() {
-            Ok(res) => Ok(res),
-            Err(_) => self.load_os_env()
-        }
-    } 
-
     /// Load environment variable from the Env.toml file
+    /// This is only used in the dev environment
     /// 
     /// # Arguments
     /// * `&self` - &Env
@@ -59,31 +40,31 @@ impl Env {
         
         Ok(env)
     }
+}
 
-    /// Load environment variable from the OS
-    /// 
-    /// # Arguments
-    /// * `&self` - &Env
-    fn load_os_env(&self) -> Result<Env, Error> {
-        info!("Loading OS environment variable");
-        let sync_interval = match env::var(SYNC_INTERVAL).ok() {
-            Some(s) => s.parse::<u64>().ok(),
-            None => None
+impl From<Payload> for Env {
+    fn from(p: Payload) -> Self {
+        let mut rng = rand::thread_rng();
+        let mut env = Env {
+            repository: p.url,
+            target: rng.gen::<u32>().to_string(),
+            sync_interval: Some(1800),
+            ..Default::default()
         };
 
-        Ok(Env {
-            username: env::var(GIT_USERNAME).ok(),
-            token: env::var(GIT_TOKEN).ok(),
-            repository: env::var(GIT_REPOSITORY)?,
-            target: env::var(GIT_REPO_TARGET)?,
-            ssh: env::var(GIT_SSH_KEY).ok(),
-            sync_interval
-        })
+        // compute the username
+        if let Some(creds) = p.cred {
+            env.username = creds.username;
+            env.token = creds.token;
+            env.ssh = creds.ssh;
+        }
+
+        env
     }
 }
 
 /// Load environment variables
 pub fn load_env() -> Result<Env, Error> {
     info!("Loading environment variable...");
-    Env::new().set_env()
+    Env::new().load_local_env()
 }

@@ -55,6 +55,7 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     }
 
     let namespace = metadata.namespace.unwrap_or("default".to_owned());
+    
     // Do the process of decrypting and other stuff here...
 
     // set the data in the global var...
