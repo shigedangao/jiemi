@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use tonic::Status;
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -10,7 +11,8 @@ pub enum Error {
     Pull(String),
     RefreshDuration,
     MaxPullRetry,
-    Server(String)
+    Server(String),
+    Bootstrap(String)
 }
 
 impl std::fmt::Display for Error {
@@ -24,7 +26,8 @@ impl std::fmt::Display for Error {
             Error::Pull(msg) => write!(f, "Unable to pull repository changes {msg}"),
             Error::RefreshDuration => write!(f, "Refresh interval is inferior to 180 seconds / 3 min"),
             Error::MaxPullRetry => write!(f, "Failed to refresh repository after retrying 20 times"),
-            Error::Server(msg) => write!(f, "gRPC server error: {msg}")
+            Error::Server(msg) => write!(f, "gRPC server error: {msg}"),
+            Error::Bootstrap(msg) => write!(f, "Initialization problem. State can't be recovered {msg}")
         }
     }
 }
@@ -58,5 +61,17 @@ impl From<config::ConfigError> for Error {
 impl From<tonic::transport::Error> for Error {
     fn from(err: tonic::transport::Error) -> Self {
         Error::Server(err.to_string())
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Error::Bootstrap(err.to_string())
+    }
+}
+
+impl From<Error> for Status {
+    fn from(err: Error) -> Self {
+        Status::internal(err.to_string())
     }
 }

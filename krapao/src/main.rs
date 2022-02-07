@@ -29,7 +29,7 @@ fn setup() -> Result<()> {
 async fn main() -> Result<()> {
     setup()?;
     // create the state
-    let state = state::create_state();
+    let state = state::create_state()?;
 
     // bootstrap the server
     server::bootstrap_server(state).await?;

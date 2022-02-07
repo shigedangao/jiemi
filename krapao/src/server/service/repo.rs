@@ -6,7 +6,7 @@ use self::proto::{
 };
 use crate::repo;
 use crate::env::Env;
-use crate::state::State;
+use crate::state;
 use crate::err::Error;
 
 
@@ -16,7 +16,7 @@ pub mod proto {
 
 #[derive(Debug, Default, Clone)]
 pub struct RepoHandler {
-    pub state: State
+    pub state: state::State
 }
 
 #[async_trait]
@@ -31,8 +31,7 @@ impl RepoService for RepoHandler {
 
         // retrieve the state
         let mut state = self.state.lock()
-            .map_err(|err| Error::Server(err.to_string()))
-            .map_err(|err| Status::internal(err.to_string()))?;
+            .map_err(|err| Error::Server(err.to_string()))?;
 
         // if the state is already contain the repository then we don't need to clone it again
         if state.contains_key(&env.repository) {
@@ -42,12 +41,12 @@ impl RepoService for RepoHandler {
         }
 
         // maybe do this async ?
-        let config = repo::initialize_git(&env)
-            .map_err(|err| Status::internal(err.to_string()))?;
-
-        // add the new git config in the state
-        state.insert(env.repository, config);
+        let config = repo::initialize_git(&env)?;
         
+        // add the new git config in the state
+        state.insert(env.repository, config.clone());
+        state::save_new_repo_in_persistent_state(config)?;
+
         Ok(Response::new(ProtoResponse {
             done: true
         }))

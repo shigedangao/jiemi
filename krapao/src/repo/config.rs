@@ -1,10 +1,11 @@
 use std::path::Path;
 use std::process::Command;
+use serde::{Serialize, Deserialize};
 use crate::err::Error;
 use crate::helper;
 use crate::env::Env;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Credentials {
     Token(String, String),
     Ssh(String),
@@ -36,10 +37,10 @@ impl Credentials {
     }
 } 
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct GitConfig {
     auth_method: Credentials,
-    repo_uri: String,
+    pub repo_uri: String,
     target: String
 }
 
