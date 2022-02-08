@@ -1,7 +1,5 @@
-use config::{Config, File};
 use serde::Deserialize;
 use rand::Rng;
-use crate::err::Error;
 use crate::server::service::repo::proto::Payload;
 
 #[derive(Debug, Default, Deserialize)]
@@ -18,28 +16,6 @@ pub struct Env {
     pub ssh: Option<String>,
     #[serde(rename(deserialize = "SYNC_INTERVAL"))]
     pub sync_interval: Option<u64>
-}
-
-impl Env {
-    /// Create a new env handler
-    fn new() -> Self {
-        Env::default()
-    }
-
-    /// Load environment variable from the Env.toml file
-    /// This is only used in the dev environment
-    /// 
-    /// # Arguments
-    /// * `&self` - &Env
-    fn load_local_env(&self) -> Result<Env, Error> {
-        info!("Loading local environment variable");
-        let mut settings = Config::default();
-        settings.merge(File::with_name("Env"))?;
-
-        let env = settings.try_into::<Env>()?;
-        
-        Ok(env)
-    }
 }
 
 impl From<Payload> for Env {
@@ -61,10 +37,4 @@ impl From<Payload> for Env {
 
         env
     }
-}
-
-/// Load environment variables
-pub fn load_env() -> Result<Env, Error> {
-    info!("Loading environment variable...");
-    Env::new().load_local_env()
 }

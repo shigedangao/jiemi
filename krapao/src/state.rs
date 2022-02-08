@@ -8,6 +8,7 @@ use crate::err::Error;
 // Constant
 const REPO_FILE_PATH: &str = "./list.json";
 
+// Alias type
 pub type State = Arc<Mutex<HashMap<String, GitConfig>>>;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -51,7 +52,7 @@ pub fn save_new_repo_in_persistent_state(config: GitConfig) -> Result<(), Error>
     }
 
     // now encrypt back the repo
-    let json = serde_json::to_string(&list)?;
+    let json = serde_json::to_string_pretty(&list)?;
     fs::write(REPO_FILE_PATH, json)?;
 
     Ok(())

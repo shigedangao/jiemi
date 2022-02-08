@@ -29,6 +29,7 @@ impl RepoService for RepoHandler {
         // retrieve the env from the request
         let env = Env::from(input);
 
+        info!("acquire lock");
         // retrieve the state
         let mut state = self.state.lock()
             .map_err(|err| Error::Server(err.to_string()))?;

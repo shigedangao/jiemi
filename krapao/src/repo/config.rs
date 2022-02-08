@@ -144,11 +144,11 @@ impl GitConfig {
     /// # Arguments
     /// * `&self` - &Self
     /// * `target` - String
-    pub fn pull(&self, target: String) -> Result<(), Error> {
-        info!("Pulling change from upstream");
+    pub fn pull(&self) -> Result<(), Error> {
+        info!("Pulling change from upstream for {}", self.repo_uri);
         let status = Command::new("git")
             .arg("-C")
-            .arg(target)
+            .arg(self.target.clone())
             .arg("pull")
             .arg("--rebase")
             .status()?;
@@ -165,8 +165,23 @@ impl GitConfig {
 
 #[cfg(test)]
 mod tests {
+    use config::{Config, File};
     use super::*;
-    use crate::env;
+
+    /// Load environment variable from the Env.toml file
+    /// This is only used in the dev environment. this method is only used for local test purposes
+    /// 
+    /// # Arguments
+    /// * `&self` - &Env
+    fn load_local_env() -> Result<Env, Error> {
+        info!("Loading local environment variable");
+        let mut settings = Config::default();
+        settings.merge(File::with_name("Env"))?;
+
+        let env = settings.try_into::<Env>()?;
+        
+        Ok(env)
+    }
 
     #[test]
     fn expect_to_clone_public_repo() {
@@ -180,7 +195,7 @@ mod tests {
         assert!(handle.init_repository().is_ok());
 
         // pull the repository
-        let res = handle.pull("../../test".to_owned());
+        let res = handle.pull();
         assert!(res.is_ok());
     }
 
@@ -194,7 +209,7 @@ mod tests {
     #[test]
     fn expect_to_clone_private_repo() {
         // read the env as the token is stored in the env
-        let env = env::load_env().unwrap();
+        let env = load_local_env().unwrap();
         let credentials = Credentials::Token(env.username.unwrap(), env.token.unwrap());
         let handle = GitConfig::new(
             credentials, 
@@ -207,7 +222,7 @@ mod tests {
 
     #[test]
     fn expect_to_clone_repo_by_ssh() {
-        let env = env::load_env().unwrap();
+        let env = load_local_env().unwrap();
         let credentials = Credentials::Ssh(env.ssh.unwrap());
         let handle = GitConfig::new(
             credentials,

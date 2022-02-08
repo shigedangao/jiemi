@@ -9,11 +9,12 @@ mod env;
 mod helper;
 mod server;
 mod state;
+mod sync;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "debug");
+        std::env::set_var("RUST_LOG", "krapao=debug");
     }
 
     if std::env::var("RUST_BACKTRACE").is_err() {
@@ -32,7 +33,15 @@ async fn main() -> Result<()> {
     let state = state::create_state()?;
 
     // bootstrap the server
-    server::bootstrap_server(state).await?;
+    let res = tokio::try_join!(
+        server::bootstrap_server(state.clone()),
+        sync::synchronize_repository(state.clone())
+    );
+
+    match res {
+        Ok(_) => error!("Expect server / watcher to not stop"),
+        Err(err) => error!("{}", err.to_string())
+    }
 
     Ok(())
 }
