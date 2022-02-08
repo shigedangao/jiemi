@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::Path;
 use std::process::Command;
 use serde::{Serialize, Deserialize};
@@ -137,6 +138,14 @@ impl GitConfig {
 
         Ok(())
     }
+
+    /// Delete repository that was clone
+    pub fn delete_repository(&self) -> Result<(), Error> {
+        info!("Delete repository {}", self.repo_uri);
+        fs::remove_dir_all(&self.target)?;
+
+        Ok(())
+    } 
 
     /// Pull repository with the rebase option. Though we won't make any
     /// kind of changes to the original files

@@ -9,7 +9,6 @@ use crate::env::Env;
 use crate::state;
 use crate::err::Error;
 
-
 pub mod proto {
     tonic::include_proto!("repository");
 }
@@ -21,6 +20,16 @@ pub struct RepoHandler {
 
 #[async_trait]
 impl RepoService for RepoHandler {
+    /// Configure a new repository in the krapao project.
+    /// We're:
+    ///     - Add the repository in the list of repos to listen
+    ///     - Store the repository in a persistent state & tempo state
+    ///     - Clone the repository
+    ///     - Store the state which can be used by an async task run in parallel with the gRPC server
+    /// 
+    /// # Arguments
+    /// * `&self` - Self
+    /// * `request` - Request<Payload>
     async fn set_repository(
         &self,
         request: Request<Payload>
@@ -28,8 +37,6 @@ impl RepoService for RepoHandler {
         let input = request.into_inner();
         // retrieve the env from the request
         let env = Env::from(input);
-
-        info!("acquire lock");
         // retrieve the state
         let mut state = self.state.lock()
             .map_err(|err| Error::Server(err.to_string()))?;
@@ -54,11 +61,35 @@ impl RepoService for RepoHandler {
         // in this case we're going to trigger the creation of a new repo
     }
 
+    /// Delete a repository from the list of repository
+    ///     - Remove the repo from the list of repo
+    ///     - Remove the repo from the persistent state
+    ///     - Delete the repository
+    /// 
+    /// # Arguments
+    /// * `self` - Self
+    /// * `request` - Request<Payload>
     async fn delete_repository(
         &self,
         request: Request<Payload>
     ) -> Result<Response<ProtoResponse>, Status> {
-        let _ = request.into_inner();
+        let input = request.into_inner();
+        // convert the input as an Env
+        let env = Env::from(input);
+        // get the state
+        let mut state = self.state.lock()
+            .map_err(|err| Error::Server(err.to_string()))?;
+
+        if state.contains_key(&env.repository) {
+            let config = state.remove(&env.repository);
+            if let Some(git) = config {
+                // remove the value from the persistent state
+                state::remove_repo_from_persistent_state(&env.repository)?;
+                git.delete_repository()?;
+            }
+        } else {
+            info!("No repository to delete");
+        }
 
         Ok(Response::new(ProtoResponse {
             done: true,

@@ -57,3 +57,22 @@ pub fn save_new_repo_in_persistent_state(config: GitConfig) -> Result<(), Error>
 
     Ok(())
 }
+
+/// Remove a config from the persistent state. This helps krapao
+/// to not pull changes from the repo again
+/// 
+/// # Arguments
+/// * `key` - &str
+pub fn remove_repo_from_persistent_state(key: &str) -> Result<(), Error> {
+    let saved_state = fs::read(REPO_FILE_PATH)?;
+    let mut list: List = serde_json::from_slice(&saved_state)?;
+
+    if let Some(existing_state) = list.repositories.as_mut() {
+        existing_state.remove(key);
+    }
+
+    let json = serde_json::to_string_pretty(&list)?;
+    fs::write(REPO_FILE_PATH, json)?;
+    
+    Ok(())
+}
