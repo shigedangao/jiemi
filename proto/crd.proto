@@ -1,0 +1,17 @@
+syntax = "proto3";
+package crd;
+
+service CrdService {
+    rpc get_files(Payload) returns (Response);
+}
+
+message Payload {
+    string fileToDecrypt = 1;
+    string sopsFilePath = 2;
+    string repository = 3;
+}
+
+message Response {
+    string encrypted_file = 1;
+    string sops_file = 2;
+}

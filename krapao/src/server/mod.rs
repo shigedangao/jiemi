@@ -5,6 +5,10 @@ use self::service::repo::{
     proto::repo_service_server::RepoServiceServer,
     RepoHandler
 };
+use self::service::crd::{
+    proto::crd_service_server::CrdServiceServer,
+    CrdHandler
+};
 
 pub mod service;
 
@@ -17,6 +21,9 @@ pub async fn bootstrap_server(state: State) -> Result<(), Error> {
 
     Server::builder()
         .add_service(RepoServiceServer::new(RepoHandler {
+            state: state.clone()
+        }))
+        .add_service(CrdServiceServer::new(CrdHandler {
             state: state.clone()
         }))
         .serve(addr)

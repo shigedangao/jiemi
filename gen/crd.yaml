@@ -104,6 +104,9 @@ spec:
                       required:
                         - url
                       type: object
+                    sops_path:
+                      nullable: true
+                      type: string
                   required:
                     - filename
                     - repository

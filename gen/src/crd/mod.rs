@@ -35,7 +35,9 @@ struct GenericConfig {
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Source {
     repository: Repository,
-    pub filename: String
+    pub file_to_decrypt: String,
+    // default to .sops.yaml
+    pub sops_path: Option<String>
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]

@@ -26,7 +26,7 @@ pub struct Status {
     deployed_at: String,
     id: u64,
     revision: String,
-    filename: String,
+    file_to_decrypt: String,
     status: SyncStatus,
     error_message: Option<String>
 }
@@ -53,9 +53,9 @@ impl DecryptorStatus {
             None => (Some(VecDeque::new()), 0 as u64)
         };
 
-        let filename = decryptor.spec.source.filename;
+        let file_to_decrypt = decryptor.spec.source.file_to_decrypt;
         DecryptorStatus {
-            current: Status::new(status, revision, filename, err, previous_id),
+            current: Status::new(status, revision, file_to_decrypt, err, previous_id),
             history
         }
     }
@@ -82,13 +82,13 @@ impl Status {
     /// # Arguments
     /// * `status` - SyncStatus
     /// * `revision` - String
-    /// * `filename` - String
+    /// * `file_to_decrypt` - String
     /// * `err` - Option<String>
     /// * `previous_id` - u64
     fn new(
         status: SyncStatus,
         revision: String,
-        filename: String,
+        file_to_decrypt: String,
         err: Option<String>,
         previous_id: u64
     ) -> Self {
@@ -96,7 +96,7 @@ impl Status {
             deployed_at: Utc::now().to_rfc3339().to_string(),
             id: previous_id + 1,
             revision,
-            filename,
+            file_to_decrypt,
             status,
             error_message: err.and_then(|msg| Some(msg.to_string()))
         }
