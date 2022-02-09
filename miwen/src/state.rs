@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use crate::error::Error;
+use crate::err::Error;
 
 pub type State = Arc<Mutex<HashMap<String, i64>>>;
 
@@ -29,6 +29,23 @@ pub fn gen_id_exist_from_state(state: State, key: String, value: i64) -> Result<
 
     // otherwise update the state...
     state.insert(String::from(&key), value);
+
+    Ok(false)
+}
+
+/// Check if the CRD is registered in the state
+/// This is gonna be used to trigger a grpc call to pull the repository
+/// 
+/// # Arguments
+/// * `state` - State
+/// * `key` - &str
+pub fn is_registered(state: State, key: &str) -> Result<bool, Error> {
+    let state = state.lock()
+        .map_err(|_| Error::Watch("Unable to acquired the lock".to_owned()))?;
+
+    if state.contains_key(key) {
+        return Ok(true);
+    }
 
     Ok(false)
 }

@@ -2,8 +2,9 @@
 extern crate log;
 
 mod controller;
-mod error;
+mod err;
 mod state;
+mod client;
 
 /// Setup different logging & debugging services
 fn setup() -> color_eyre::Result<()> {

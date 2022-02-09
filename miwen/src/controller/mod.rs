@@ -9,7 +9,7 @@ use gen::crd::{
     status::{SyncStatus, DecryptorStatus}
 };
 use futures::{TryStreamExt, StreamExt};
-use crate::error::Error;
+use crate::err::Error;
 use crate::state;
 
 /// Update the status of a targeted Decryptor object
@@ -48,6 +48,10 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     let generation_id = metadata.generation
         .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
 
+    if state::is_registered(state.clone(), &name)? {
+        // proceed to call the grpc api to pull the repo
+    }
+
     let generation_exist = state::gen_id_exist_from_state(state, name.clone(), generation_id)?;
     if generation_exist {
         info!("no need to update the status for decryptor {name}");
@@ -79,7 +83,7 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
 /// 
 /// The watcher will update the resource and add a status about the Decryptor
 /// 
-/// # Why using a State ?
+/// # Why use a State ?
 /// By default, any changes on the Kubernetes object will trigger a new event.
 /// This is something we want to avoid as this would create an infinite loop.
 /// By using a state we're storing the generation id of the resource in a HashMap

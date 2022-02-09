@@ -10,6 +10,10 @@ spec:
   source:
     repository:
       url: https://github.com/shigedangao/uselesscli.git
-      credentials: {}
+      credentials:
+        username:
+          secretName: <>
+          key: <>
+          literal: <>
     fileToDecrypt: dodo.enc.yaml
     sopsPath: .sops.yaml

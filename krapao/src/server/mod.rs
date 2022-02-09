@@ -14,6 +14,9 @@ pub mod service;
 
 /// Initialize the gRPC server
 /// The server is used to communicate with the controller
+/// 
+/// # Arguments
+/// * `state` - State
 pub async fn bootstrap_server(state: State) -> Result<(), Error> {
     info!("Gearing up the krapao server");
     let addr = "[::1]:50208".parse()

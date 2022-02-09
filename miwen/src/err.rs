@@ -8,7 +8,8 @@ pub enum Error {
     KubeRuntime,
     Generator(String),
     Watch(String),
-    Serialize
+    Serialize,
+    Rpc(String)
 }
 
 impl fmt::Display for Error {
@@ -18,7 +19,8 @@ impl fmt::Display for Error {
             Error::KubeRuntime => write!(f, "Unexpected error with the controller"),
             Error::Generator(msg) => write!(f, "Error encountered with the gen {msg}"),
             Error::Watch(msg) => write!(f, "Error while watching the decryptor resource {msg}"),
-            Error::Serialize => write!(f, "Error while serializing the Status")
+            Error::Serialize => write!(f, "Error while serializing the Status"),
+            Error::Rpc(msg) => write!(f, "Error while communicating with rpc server {msg}")
         }
     }
 }
@@ -49,5 +51,11 @@ impl From<kube::runtime::watcher::Error> for Error {
 impl From<serde_json::Error> for Error {
     fn from(_: serde_json::Error) -> Self {
         Error::Serialize
+    }
+}
+
+impl From<tonic::transport::Error> for Error {
+    fn from(err: tonic::transport::Error) -> Self {
+        Error::Rpc(err.to_string())
     }
 }

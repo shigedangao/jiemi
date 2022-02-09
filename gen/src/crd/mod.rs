@@ -7,6 +7,7 @@ use kube::{
 use status::DecryptorStatus;
 
 pub mod status;
+pub mod repo;
 
 // The implementation is based on
 //
@@ -21,36 +22,16 @@ pub struct DecryptorSpec {
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Provider {
-    gcp: Option<GenericConfig>,
-    aws: Option<GenericConfig>
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
-struct GenericConfig {
-    secret_name: Option<String>,
-    key: Option<String>,
-    literal: Option<String>
+    gcp: Option<repo::GenericConfig>,
+    aws: Option<repo::GenericConfig>
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Source {
-    repository: Repository,
+    pub repository: repo::Repository,
     pub file_to_decrypt: String,
     // default to .sops.yaml
     pub sops_path: Option<String>
-}
-
-#[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
-struct Repository {
-    url: String,
-    credentials: Option<RepositoryCredentials>
-}
-
-#[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
-struct RepositoryCredentials {
-    username: Option<GenericConfig>,
-    token: Option<GenericConfig>,
-    ssh: Option<GenericConfig>
 }
 
 /// Generate a CRD which is used to be applied in a Kubernetes cluster

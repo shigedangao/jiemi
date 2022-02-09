@@ -960,8 +960,11 @@ dependencies = [
  "k8s-openapi",
  "kube",
  "log",
+ "prost",
  "serde_json",
  "tokio",
+ "tonic",
+ "tonic-build",
 ]
 
 [[package]]
