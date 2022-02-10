@@ -52,7 +52,7 @@ spec:
                   type: object
                 source:
                   properties:
-                    filename:
+                    fileToDecrypt:
                       type: string
                     repository:
                       properties:
@@ -104,11 +104,11 @@ spec:
                       required:
                         - url
                       type: object
-                    sops_path:
+                    sopsPath:
                       nullable: true
                       type: string
                   required:
-                    - filename
+                    - fileToDecrypt
                     - repository
                   type: object
               required:
@@ -125,7 +125,7 @@ spec:
                     error_message:
                       nullable: true
                       type: string
-                    filename:
+                    file_to_decrypt:
                       type: string
                     id:
                       format: uint64
@@ -141,7 +141,7 @@ spec:
                       type: string
                   required:
                     - deployed_at
-                    - filename
+                    - file_to_decrypt
                     - id
                     - revision
                     - status
@@ -154,7 +154,7 @@ spec:
                       error_message:
                         nullable: true
                         type: string
-                      filename:
+                      file_to_decrypt:
                         type: string
                       id:
                         format: uint64
@@ -170,7 +170,7 @@ spec:
                         type: string
                     required:
                       - deployed_at
-                      - filename
+                      - file_to_decrypt
                       - id
                       - revision
                       - status

@@ -29,8 +29,9 @@ pub struct Provider {
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Source {
     pub repository: repo::Repository,
+    #[serde(rename = "fileToDecrypt")]
     pub file_to_decrypt: String,
-    // default to .sops.yaml
+    #[serde(rename = "sopsPath")]
     pub sops_path: Option<String>
 }
 

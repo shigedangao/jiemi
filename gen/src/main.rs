@@ -3,6 +3,8 @@ use std::fs;
 use color_eyre::Result;
 
 pub mod crd;
+mod err;
+mod util;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {

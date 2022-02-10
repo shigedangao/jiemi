@@ -468,6 +468,7 @@ dependencies = [
 name = "gen"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "chrono",
  "color-eyre",
  "k8s-openapi",

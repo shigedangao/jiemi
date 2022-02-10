@@ -11,6 +11,7 @@ use gen::crd::{
 use futures::{TryStreamExt, StreamExt};
 use crate::err::Error;
 use crate::state;
+use crate::client::server;
 
 /// Update the status of a targeted Decryptor object
 /// 
@@ -47,9 +48,14 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         .ok_or(Error::Watch("Name field does not exist on the Decryptor resource !".to_owned()))?;
     let generation_id = metadata.generation
         .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
+    let namespace = metadata.namespace.unwrap_or("default".to_owned());
 
-    if state::is_registered(state.clone(), &name)? {
+
+    // If the resource is not registered in the state, then this mean that the repository
+    // might not be pulled. In that case we call the rpc server to pull the repository
+    if !state::is_registered(state.clone(), &name)? {
         // proceed to call the grpc api to pull the repo
+        server::dispatch_clone_repository(&object.spec, &client, &namespace).await?;
     }
 
     let generation_exist = state::gen_id_exist_from_state(state, name.clone(), generation_id)?;
@@ -57,8 +63,6 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         info!("no need to update the status for decryptor {name}");
         return Ok(())
     }
-
-    let namespace = metadata.namespace.unwrap_or("default".to_owned());
     
     // Do the process of decrypting and other stuff here...
 
