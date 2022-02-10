@@ -13,7 +13,8 @@ pub enum Error {
     MaxPullRetry,
     Server(String),
     Bootstrap(String),
-    Sync(String)
+    Sync(String),
+    Sops(String)
 }
 
 impl std::fmt::Display for Error {
@@ -29,7 +30,8 @@ impl std::fmt::Display for Error {
             Error::MaxPullRetry => write!(f, "Failed to refresh repository after retrying 20 times"),
             Error::Server(msg) => write!(f, "gRPC server error: {msg}"),
             Error::Bootstrap(msg) => write!(f, "Initialization problem. State can't be recovered {msg}"),
-            Error::Sync(msg) => write!(f, "Issue while syncing repositories {msg}")
+            Error::Sync(msg) => write!(f, "Issue while syncing repositories {msg}"),
+            Error::Sops(msg) => write!(f, "Error with SOPS: {msg}")
         }
     }
 }

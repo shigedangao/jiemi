@@ -6,6 +6,7 @@ use self::proto::{
 };
 use crate::state;
 use crate::err::Error;
+use crate::sops;
 
 pub mod proto {
     tonic::include_proto!("crd");
@@ -18,7 +19,7 @@ pub struct CrdHandler {
 
 #[async_trait]
 impl CrdService for CrdHandler {
-    async fn get_files(
+    async fn render(
         &self,
         request: Request<Payload>
     ) -> Result<Response<ProtoResponse>, Status> {
@@ -29,12 +30,11 @@ impl CrdService for CrdHandler {
 
         let config = guard.get(&input.repository)
             .ok_or(Error::Server("Repository does not exist".to_owned()))?;
-        
-        let (dec, sops) = config.get_files(&input.file_to_decrypt, &input.sops_file_path)?;
 
+        let res = sops::decrypt_file(&config, &input.file_to_decrypt, &input.sops_file_path)?;
+        
         Ok(Response::new(ProtoResponse {
-            encrypted_file: dec,
-            sops_file: sops
+            resource: res
         }))
     }
 }

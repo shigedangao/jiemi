@@ -10,6 +10,7 @@ mod helper;
 mod server;
 mod state;
 mod sync;
+mod sops;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {

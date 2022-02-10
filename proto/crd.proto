@@ -2,7 +2,7 @@ syntax = "proto3";
 package crd;
 
 service CrdService {
-    rpc get_files(Payload) returns (Response);
+    rpc render(Payload) returns (Response);
 }
 
 message Payload {
@@ -12,6 +12,5 @@ message Payload {
 }
 
 message Response {
-    string encrypted_file = 1;
-    string sops_file = 2;
+    string resource = 1;
 }

@@ -42,7 +42,7 @@ impl Credentials {
 pub struct GitConfig {
     auth_method: Credentials,
     pub repo_uri: String,
-    target: String
+    pub target: String
 }
 
 impl GitConfig {
@@ -169,23 +169,6 @@ impl GitConfig {
 
         info!("Local repository cache has been updated");
         Ok(())
-    }
-
-    /// Retrieve the files from the repository. These files will be sent back to the
-    /// controller which will decrypt them and apply in the Kubernetes cluster
-    /// 
-    /// # Arguments
-    /// * `&self` - Self
-    /// * `file_to_decrypt` - &str
-    /// * `sops_path` - &str
-    pub fn get_files(&self, file_to_decrypt: &str, sops_path: &str) -> Result<(String, String), Error> {
-        let file_to_decrypt_path = format!("{}/{}", self.target, file_to_decrypt);
-        let sops_path = format!("{}/{}", self.target, sops_path);
-
-        let dec = fs::read_to_string(file_to_decrypt_path)?;
-        let sops = fs::read_to_string(sops_path)?;
-
-        Ok((dec, sops))
     }
 }
 
