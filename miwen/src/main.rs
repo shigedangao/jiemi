@@ -26,6 +26,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup()?;
 
     let state = state::generate_new_state();
+    // @TODO if it crash then we should restart the task...
+    // Create a counter with a max time value
     controller::boostrap_watcher(state).await?;
 
     Ok(())

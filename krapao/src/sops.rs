@@ -12,6 +12,7 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
     let t_file_path = format!("{}/{target_file_path}", config.target);
     let s_file_path = format!("{}/{sops_file_path}", config.target);
     
+    info!("Trying to decrypt {target_file_path}...");
     let cmd = Command::new("sops")
         .arg("-d")
         .arg(t_file_path)

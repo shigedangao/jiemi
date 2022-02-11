@@ -105,11 +105,11 @@ spec:
                         - url
                       type: object
                     sopsPath:
-                      nullable: true
                       type: string
                   required:
                     - fileToDecrypt
                     - repository
+                    - sopsPath
                   type: object
               required:
                 - provider

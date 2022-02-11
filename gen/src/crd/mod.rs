@@ -32,7 +32,7 @@ pub struct Source {
     #[serde(rename = "fileToDecrypt")]
     pub file_to_decrypt: String,
     #[serde(rename = "sopsPath")]
-    pub sops_path: Option<String>
+    pub sops_path: String
 }
 
 /// Generate a CRD which is used to be applied in a Kubernetes cluster

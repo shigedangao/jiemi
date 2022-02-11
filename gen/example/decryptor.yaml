@@ -10,5 +10,5 @@ spec:
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git
-    fileToDecrypt: dodo.enc.yaml
-    sopsPath: .sops.yaml
+    fileToDecrypt: test/foo.enc.yaml
+    sopsPath: test/.sops.yaml

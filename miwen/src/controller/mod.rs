@@ -11,7 +11,9 @@ use gen::crd::{
 use futures::{TryStreamExt, StreamExt};
 use crate::err::Error;
 use crate::state;
-use crate::client::server;
+use crate::client::{server, crd};
+
+mod apply;
 
 /// Update the status of a targeted Decryptor object
 /// 
@@ -50,7 +52,6 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
     let namespace = metadata.namespace.unwrap_or("default".to_owned());
 
-
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
     if !state::is_registered(state.clone(), &name)? {
@@ -64,8 +65,12 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         return Ok(())
     }
     
-    // Do the process of decrypting and other stuff here...
+    // Call the rpc server to get the decrypted k8s file to apply
+    // Maybe do the step below with spawn ?
+    let tmpl = crd::get_decrypted_kubernetes_object(&object.spec).await?;
+    apply::apply_rendered_object(tmpl, &client, &namespace).await?;
 
+    // @TODO create a new module...
     // set the data in the global var...
     let status = DecryptorStatus::new(
         SyncStatus::Sync,
@@ -115,7 +120,7 @@ pub async fn boostrap_watcher(state: state::State) -> Result<(), Error> {
     // Event to listen for create / modified event on the Decryptor resources
     let mut apply_events = try_flatten_applied(watcher).boxed_local();
     while let Some(dec) = apply_events.try_next().await? {
-        // increase the ref counter
+        // maybe do that in a different thread...
         parse_event( dec, client.clone(), state.clone()).await?;
     }
     
