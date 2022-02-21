@@ -25,7 +25,7 @@ pub enum SyncStatus {
 pub struct Status {
     deployed_at: String,
     id: u64,
-    revision: String,
+    pub revision: String,
     file_to_decrypt: String,
     status: SyncStatus,
     error_message: Option<String>

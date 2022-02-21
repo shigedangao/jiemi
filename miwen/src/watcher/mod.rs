@@ -13,7 +13,10 @@ use crate::err::Error;
 use crate::state;
 use crate::client::{server, crd};
 
-mod apply;
+pub mod apply;
+
+// constant
+pub const DEFAULT_NAMESPACE: &str = "default";
 
 /// Update the status of a targeted Decryptor object
 /// 
@@ -22,7 +25,7 @@ mod apply;
 /// * `name` - &str
 /// * `ns` - &str
 /// * `status` - DecryptorStatus
-async fn update_status(client: &Client, name: &str, ns: &str, status: DecryptorStatus) -> Result<(), Error> {
+pub async fn update_status(client: &Client, name: &str, ns: &str, status: DecryptorStatus) -> Result<(), Error> {
     let api = Api::<Decryptor>::namespaced(client.clone(), ns);
     let mut curr_decryptor_status = api.get_status(&name).await?;
     curr_decryptor_status.status = Some(status);
@@ -50,7 +53,8 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         .ok_or(Error::Watch("Name field does not exist on the Decryptor resource !".to_owned()))?;
     let generation_id = metadata.generation
         .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
-    let ns = metadata.namespace.unwrap_or("default".to_owned());
+    let ns = metadata.namespace
+        .unwrap_or(DEFAULT_NAMESPACE.to_owned());
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
