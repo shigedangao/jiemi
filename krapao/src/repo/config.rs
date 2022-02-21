@@ -170,6 +170,26 @@ impl GitConfig {
         info!("Local repository cache has been updated");
         Ok(())
     }
+
+    /// Get the commit hash from the repository
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    pub fn get_commit_hash(&self) -> Option<String> {
+        let output = Command::new("git")
+            .arg("-C")
+            .arg(self.target.clone())
+            .arg("rev-parse")
+            .arg("HEAD")
+            .output();
+
+        if let Ok(o) = output {
+            let out = o.stdout;
+            return String::from_utf8(out).ok();
+        }
+
+        None
+    }
 }
 
 #[cfg(test)]

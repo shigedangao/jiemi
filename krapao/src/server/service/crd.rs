@@ -32,9 +32,11 @@ impl CrdService for CrdHandler {
             .ok_or(Error::Server("Repository does not exist".to_owned()))?;
 
         let res = sops::decrypt_file(&config, &input.file_to_decrypt, &input.sops_file_path)?;
-        
+        let commit_hash = config.get_commit_hash();
+
         Ok(Response::new(ProtoResponse {
-            resource: res
+            resource: res,
+            commit_hash
         }))
     }
 }

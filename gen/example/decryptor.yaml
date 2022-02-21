@@ -6,7 +6,7 @@ spec:
   provider:
     gcp:
       secretName: gcp-service-account
-      key: sa
+      key: sav
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git

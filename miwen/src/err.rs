@@ -32,7 +32,6 @@ impl std::error::Error for Error {}
 
 impl From<KubeError> for Error {
     fn from(err: KubeError) -> Self {
-        error!("{err:?}");
         match err {
             KubeError::Auth(_) => Error::KubeAuthentication,
             _ => Error::KubeRuntime

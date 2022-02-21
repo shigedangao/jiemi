@@ -50,37 +50,43 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
         .ok_or(Error::Watch("Name field does not exist on the Decryptor resource !".to_owned()))?;
     let generation_id = metadata.generation
         .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
-    let namespace = metadata.namespace.unwrap_or("default".to_owned());
+    let ns = metadata.namespace.unwrap_or("default".to_owned());
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
     if !state::is_registered(state.clone(), &name)? {
         // proceed to call the grpc api to pull the repo
-        server::dispatch_clone_repository(&object.spec, &client, &namespace).await?;
+        server::dispatch_clone_repository(&object.spec, &client, &ns).await?;
     }
 
+    // In order to not create an infinite loop of update...
+    // we're checking the generation_id
     let generation_exist = state::gen_id_exist_from_state(state, name.clone(), generation_id)?;
     if generation_exist {
         info!("no need to update the status for decryptor {name}");
         return Ok(())
     }
-    
+
     // Call the rpc server to get the decrypted k8s file to apply
-    // Maybe do the step below with spawn ?
-    let tmpl = crd::get_decrypted_kubernetes_object(&object.spec).await?;
-    apply::apply_rendered_object(tmpl, &client, &namespace).await?;
+    let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec).await {
+        Ok(res) => res,
+        Err(err) => {
+            let status = DecryptorStatus::new(SyncStatus::Error, Some(err.to_string()), "".to_owned(), object);
+            return update_status(&client, &name, &ns, status).await;
+        }
+    };
 
-    // @TODO create a new module...
-    // set the data in the global var...
-    let status = DecryptorStatus::new(
-        SyncStatus::Sync,
-          None,
-          "foo".to_owned(),
-          object
-    );
+    let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
+    // if an error happened while applying the rendered object. Then set an error to the crd
+    if let Err(err) = apply_res {
+        let status = DecryptorStatus::new(SyncStatus::Error, Some(err.to_string()), "".to_owned(), object);
+        return update_status(&client, &name, &ns, status).await;
+    }
 
+    // Otherwise update has been successsful so add a sync status
+    let status = DecryptorStatus::new(SyncStatus::Sync, None, hash, object);
     // update the status of the decryptor object
-    update_status(&client, &name, &namespace, status).await?;
+    update_status(&client, &name, &ns, status).await?;
 
     Ok(())
 }
@@ -120,8 +126,8 @@ pub async fn boostrap_watcher(state: state::State) -> Result<(), Error> {
     // Event to listen for create / modified event on the Decryptor resources
     let mut apply_events = try_flatten_applied(watcher).boxed_local();
     while let Some(dec) = apply_events.try_next().await? {
-        // maybe do that in a different thread...
-        parse_event( dec, client.clone(), state.clone()).await?;
+        // spawn in a separate thread in order to process the update asynchronously
+        tokio::spawn( parse_event( dec, client.clone(), state.clone()));
     }
     
     Ok(())

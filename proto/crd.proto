@@ -13,4 +13,5 @@ message Payload {
 
 message Response {
     string resource = 1;
+    optional string commit_hash = 2;
 }

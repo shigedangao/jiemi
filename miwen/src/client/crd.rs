@@ -33,7 +33,7 @@ impl Payload {
 /// 
 /// # Arguments
 /// * `spec` - &DecryptorSpec
-pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec) -> Result<String, Error> {
+pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec) -> Result<(String, String), Error> {
     info!("Rpc call to retrieve the decrypted kubernetes file...");
     let mut client = CrdServiceClient::connect("http://[::1]:50208").await?;
 
@@ -45,9 +45,11 @@ pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec) -> Result<Str
     let res = client.render(req).await
         .map_err(|err| Error::Rpc(err.to_string()))?;
 
-    let tmpl = res.get_ref().resource.clone();
+    let resp = res.get_ref();
+    let tmpl = resp.resource.clone();
+    let hash = resp.commit_hash.clone().unwrap_or_default();
     
     info!("✅ Template has been rendered.");
 
-    Ok(tmpl)
+    Ok((tmpl, hash))
 }
