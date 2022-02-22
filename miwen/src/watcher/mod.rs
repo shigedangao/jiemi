@@ -1,5 +1,8 @@
-use kube::{Api, Client};
-use kube::api::{ListParams, PostParams};
+use kube::{
+    Api,
+    Client,
+    api::ListParams
+};
 use kube::runtime::{
     watcher,
     utils::try_flatten_applied
@@ -17,27 +20,6 @@ pub mod apply;
 
 // constant
 pub const DEFAULT_NAMESPACE: &str = "default";
-
-/// Update the status of a targeted Decryptor object
-/// 
-/// # Arguments
-/// * `client` - &Client
-/// * `name` - &str
-/// * `ns` - &str
-/// * `status` - DecryptorStatus
-pub async fn update_status(client: &Client, name: &str, ns: &str, status: DecryptorStatus) -> Result<(), Error> {
-    let api = Api::<Decryptor>::namespaced(client.clone(), ns);
-    let mut curr_decryptor_status = api.get_status(&name).await?;
-    curr_decryptor_status.status = Some(status);
-
-    api.replace_status(
-        &name,
-        &PostParams::default(),
-        serde_json::to_vec(&curr_decryptor_status)?
-    ).await?;
-
-    Ok(())
-}
 
 /// Parse the decryptor struct which we're going to use to add the Status structure
 /// 
@@ -75,24 +57,39 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec).await {
         Ok(res) => res,
         Err(err) => {
-            let status = DecryptorStatus::new(SyncStatus::Error, Some(err.to_string()), "".to_owned(), object);
-            return update_status(&client, &name, &ns, status).await;
+            return DecryptorStatus::new(
+                SyncStatus::Error, 
+                Some(err.to_string()), 
+                "".to_owned(), 
+                object
+            )
+                .update_status(&name, &ns).await
+                .map_err( Error::from);
         }
     };
 
     let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
     // if an error happened while applying the rendered object. Then set an error to the crd
     if let Err(err) = apply_res {
-        let status = DecryptorStatus::new(SyncStatus::Error, Some(err.to_string()), "".to_owned(), object);
-        return update_status(&client, &name, &ns, status).await;
+        return DecryptorStatus::new(
+            SyncStatus::Unsync, 
+            Some(err.to_string()), 
+            hash, 
+            object
+        )
+            .update_status(&name, &ns).await
+            .map_err(Error::from);
     }
 
     // Otherwise update has been successsful so add a sync status
-    let status = DecryptorStatus::new(SyncStatus::Sync, None, hash, object);
-    // update the status of the decryptor object
-    update_status(&client, &name, &ns, status).await?;
-
-    Ok(())
+    DecryptorStatus::new(
+        SyncStatus::Sync, 
+        None, 
+        hash, 
+        object
+    )
+        .update_status(&name, &ns).await
+        .map_err(Error::from)
 }
 
 /// Create a watcher which will watch the Decryptor resources.

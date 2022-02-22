@@ -23,7 +23,6 @@ impl fmt::Display for Error {
             Error::Serialize => write!(f, "Error while serializing the Status"),
             Error::Rpc(msg) => write!(f, "Error while communicating with rpc server {msg}"),
             Error::Apply(msg) => write!(f, "Error while applying rendered resource from repo: {msg}")
-            
         }
     }
 }

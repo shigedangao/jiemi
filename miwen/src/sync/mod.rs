@@ -11,12 +11,13 @@ use crate::client::crd;
 use crate::watcher::{
     apply,
     DEFAULT_NAMESPACE,
-    update_status
 };
 
 // constant
 const THREAD_SLEEP: u64 = 180;
 
+/// Bootstrap the repo sync process
+/// It runs every 180s / 3min
 pub async fn bootstrap_repo_sync() -> Result<(), Error> {
     info!("Starting up sync process");
     loop {
@@ -31,6 +32,10 @@ pub async fn bootstrap_repo_sync() -> Result<(), Error> {
     }
 } 
 
+/// Synchronize encrypted file specified in the CRD with the associated repository
+/// Basically, we're comparing the commit hash of the last sync with the current hash in the
+/// repository.
+/// If the hash is different, then we may synchronize the file with the cluster
 async fn sync_encrypted_file_with_git() -> Result<(), Error> {
     let client = Client::try_default().await?;
     let crds = list_crd(client.clone()).await?;
@@ -58,15 +63,16 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
             // Apply the decrypted file in the kubernetes cluster
             info!("Found changes in repository. Apply changes for file {filename}");
             let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
-            if let Err(err) = apply_res {
-                let status = DecryptorStatus::new(
-                    SyncStatus::Error, 
-                    Some(err.to_string()), 
-                    hash, 
-                    crd
-                );
-                update_status(&client, &name, &ns, status).await?;
-            }
+            match apply_res {
+                Ok(_) => {
+                    let status = DecryptorStatus::new(SyncStatus::Sync, None, hash, crd);
+                    status.update_status(&name, &ns).await?;
+                },
+                Err(err) => {
+                    let status = DecryptorStatus::new(SyncStatus::Error,  Some(err.to_string()),  hash,  crd);
+                    status.update_status(&name, &ns).await?;
+                }
+            };
 
             return Ok(())
         }
@@ -80,6 +86,9 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
 
 /// Get a list of Crd. The list is used to get the file to apply on the cluster
 /// We're assuming that the repo is being already pulled...
+/// 
+/// # Arguments
+/// * `client` - Client
 async fn list_crd(client: Client) -> Result<Vec<Decryptor>, Error> {
     let api: Api<Decryptor> = Api::all(client);
     let mut list = Vec::new();
