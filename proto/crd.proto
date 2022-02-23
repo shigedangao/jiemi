@@ -9,6 +9,13 @@ message Payload {
     string fileToDecrypt = 1;
     string sopsFilePath = 2;
     string repository = 3;
+    enum Provider {
+        Gcp = 0;
+        Aws = 1;
+        None = 2;
+    }
+    Provider provider = 4;
+    string credentials = 5;
 }
 
 message Response {

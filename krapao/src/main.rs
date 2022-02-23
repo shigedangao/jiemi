@@ -11,6 +11,7 @@ mod server;
 mod state;
 mod sync;
 mod sops;
+mod auth;
 
 /// Setup different logging & debugging services
 fn setup() -> Result<()> {

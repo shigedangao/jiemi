@@ -57,7 +57,7 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
         // get file and commit hash from the repo
         let spec = crd.spec.clone();
         let filename = &spec.source.file_to_decrypt;
-        let (tmpl, hash) = crd::get_decrypted_kubernetes_object(&spec).await?;
+        let (tmpl, hash) = crd::get_decrypted_kubernetes_object(&spec, &ns).await?;
 
         if current_hash != hash {
             // Apply the decrypted file in the kubernetes cluster

@@ -79,7 +79,7 @@ impl GenericConfig {
     /// * `&self` - Self
     /// * `client` - &Client
     /// * `ns` - &str
-    async fn get_value(&self, client: &Client, ns: &str) -> Result<String, Error> {
+    pub async fn get_value(&self, client: &Client, ns: &str) -> Result<String, Error> {
         if let Some(literal) = self.literal.to_owned() {
             return Ok(literal);
         }

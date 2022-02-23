@@ -2,12 +2,20 @@ use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use kube::{
     CustomResource,
-    CustomResourceExt
+    CustomResourceExt,
+    Client
 };
 use status::DecryptorStatus;
+use crate::err::Error;
 
 pub mod status;
 pub mod repo;
+
+pub enum ProviderList {
+    Gcp(String),
+    Aws(String),
+    None
+}
 
 // The implementation is based on
 //
@@ -41,4 +49,26 @@ pub fn generate_crd() -> Result<String, Box<dyn std::error::Error>> {
     let res = serde_yaml::to_string(&Decryptor::crd())?;
 
     Ok(res)
+}
+
+impl Provider {
+    /// Get the credentials value from the provider section
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    /// * `ns` - &str
+    pub async fn get_credentials(&self, ns: &str) -> Result<ProviderList, Error> {
+        let client = Client::try_default().await?;
+        if let Some(gcp) = self.gcp.clone() {
+            let value = gcp.get_value(&client, ns).await?;
+            return Ok(ProviderList::Gcp(value));
+        }
+
+        if let Some(aws) = self.aws.clone() {
+            let value = aws.get_value(&client, ns).await?;
+            return Ok(ProviderList::Aws(value));
+        }
+
+        Ok(ProviderList::None)
+    }
 }
