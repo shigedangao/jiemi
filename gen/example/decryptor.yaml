@@ -5,8 +5,8 @@ metadata:
 spec:
   provider:
     gcp:
-      secretName: gcp-service-account
-      key: sav
+      secretName: gcp-secret
+      key: mask-336418-5d828a98a0a8.json
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git

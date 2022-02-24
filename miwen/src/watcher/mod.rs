@@ -54,7 +54,7 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     }
 
     // Call the rpc server to get the decrypted k8s file to apply
-    let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec).await {
+    let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec, &ns).await {
         Ok(res) => res,
         Err(err) => {
             return DecryptorStatus::new(

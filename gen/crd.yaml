@@ -32,7 +32,7 @@ spec:
                         literal:
                           nullable: true
                           type: string
-                        secret_name:
+                        secretName:
                           nullable: true
                           type: string
                       type: object
@@ -45,7 +45,7 @@ spec:
                         literal:
                           nullable: true
                           type: string
-                        secret_name:
+                        secretName:
                           nullable: true
                           type: string
                       type: object
@@ -68,7 +68,7 @@ spec:
                                 literal:
                                   nullable: true
                                   type: string
-                                secret_name:
+                                secretName:
                                   nullable: true
                                   type: string
                               type: object
@@ -81,7 +81,7 @@ spec:
                                 literal:
                                   nullable: true
                                   type: string
-                                secret_name:
+                                secretName:
                                   nullable: true
                                   type: string
                               type: object
@@ -94,7 +94,7 @@ spec:
                                 literal:
                                   nullable: true
                                   type: string
-                                secret_name:
+                                secretName:
                                   nullable: true
                                   type: string
                               type: object

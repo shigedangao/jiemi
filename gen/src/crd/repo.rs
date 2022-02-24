@@ -65,6 +65,7 @@ impl RepositoryCredentials {
 
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
 pub struct GenericConfig {
+    #[serde(rename = "secretName")]
     secret_name: Option<String>,
     key: Option<String>,
     literal: Option<String>
@@ -95,8 +96,10 @@ impl GenericConfig {
                     return Ok(res);
                 }
             }
+
+            return Err(Error::Kube("Unable to decrypt the secret {&secret_name} with key {&key}".to_owned()));
         }
 
-        Err(Error::Kube("Unable to retrieve the target value".to_owned()))
+        Err(Error::Kube("Secret has not been specified".to_owned()))
     }
 }
