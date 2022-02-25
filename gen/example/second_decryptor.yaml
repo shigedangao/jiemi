@@ -1,0 +1,14 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: bobo-gcp-decryptor
+spec:
+  provider:
+    gcp:
+      secretName: gcp-secret
+      key: mask-336418-5d828a98a0a8.json
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: test/bobo.enc.yaml
+    sopsPath: test/.sops.yaml
