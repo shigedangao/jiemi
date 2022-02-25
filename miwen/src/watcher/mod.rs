@@ -18,9 +18,6 @@ use crate::client::{server, crd};
 
 pub mod apply;
 
-// constant
-pub const DEFAULT_NAMESPACE: &str = "default";
-
 /// Parse the decryptor struct which we're going to use to add the Status structure
 /// 
 /// # Arguments
@@ -29,14 +26,7 @@ pub const DEFAULT_NAMESPACE: &str = "default";
 /// * `state` - State 
 async fn parse_event(object: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
     info!("Received event");
-    let metadata = object.metadata.clone();
-    // extract value which we'll use later
-    let name = metadata.name
-        .ok_or(Error::Watch("Name field does not exist on the Decryptor resource !".to_owned()))?;
-    let generation_id = metadata.generation
-        .ok_or(Error::Watch("Generation field does not exist in the Decryptor resource".to_owned()))?;
-    let ns = metadata.namespace
-        .unwrap_or(DEFAULT_NAMESPACE.to_owned());
+    let (name, generation_id, ns) = object.get_metadata_info()?;
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
@@ -57,39 +47,41 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec, &ns).await {
         Ok(res) => res,
         Err(err) => {
-            return DecryptorStatus::new(
+            // Update the status of the current decryptor
+            DecryptorStatus::new(
                 SyncStatus::Error, 
                 Some(err.to_string()), 
-                "".to_owned(), 
+                None, 
                 object
-            )
-                .update_status(&name, &ns).await
-                .map_err( Error::from);
+            ).update_status(&name, &ns).await?;
+
+            return Ok(())
         }
     };
 
     let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
     // if an error happened while applying the rendered object. Then set an error to the crd
     if let Err(err) = apply_res {
-        return DecryptorStatus::new(
+        DecryptorStatus::new(
             SyncStatus::Unsync, 
             Some(err.to_string()), 
-            hash, 
+            Some(hash), 
             object
-        )
-            .update_status(&name, &ns).await
-            .map_err(Error::from);
+        ).update_status(&name, &ns).await?;
+
+        return Ok(())
     }
 
     // Otherwise update has been successsful so add a sync status
     DecryptorStatus::new(
         SyncStatus::Sync, 
         None, 
-        hash, 
+        Some(hash), 
         object
     )
-        .update_status(&name, &ns).await
-        .map_err(Error::from)
+        .update_status(&name, &ns).await?;
+
+    return Ok(())
 }
 
 /// Create a watcher which will watch the Decryptor resources.

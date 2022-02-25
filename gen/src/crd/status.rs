@@ -44,14 +44,14 @@ impl DecryptorStatus {
     /// * `status` - SyncStatus
     /// * `err` - Option<String>
     /// * `revision` - String
-    /// * `decryptor` - Decryptor
+    /// * `current` - Decryptor
     pub fn new(
         status: SyncStatus,
         err: Option<String>,
-        revision: String,
-        decryptor: Decryptor,
+        revision: Option<String>,
+        current: Decryptor,
     ) -> Self {
-        let (history, previous_id) = match decryptor.status {
+        let (history, previous_id) = match current.status {
             Some(mut prev) => {
                 prev.add_current_to_history();
                 (prev.history, prev.current.id)
@@ -59,9 +59,15 @@ impl DecryptorStatus {
             None => (Some(VecDeque::new()), 0 as u64)
         };
 
-        let file_to_decrypt = decryptor.spec.source.file_to_decrypt;
+        let file_to_decrypt = current.spec.source.file_to_decrypt;
         DecryptorStatus {
-            current: Status::new(status, revision, file_to_decrypt, err, previous_id),
+            current: Status::new(
+                status,
+                revision.unwrap_or_default(),
+                file_to_decrypt, 
+                err.and_then(|m| Some(m.to_string())),
+                previous_id
+            ),
             history
         }
     }

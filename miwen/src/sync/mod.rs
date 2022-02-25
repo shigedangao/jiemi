@@ -8,10 +8,7 @@ use tokio::time::sleep;
 use std::time::Duration;
 use crate::err::Error;
 use crate::client::crd;
-use crate::watcher::{
-    apply,
-    DEFAULT_NAMESPACE,
-};
+use crate::watcher::apply;
 
 // constant
 const THREAD_SLEEP: u64 = 180;
@@ -42,12 +39,7 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
 
     // for each crd we're going to check whenever the crd is synced with the latest
     for crd in crds {
-        let metadata = crd.metadata.clone();
-        let name = metadata.name
-            .ok_or(Error::Watch("Name field does not exist on the Decryptor resource !".to_owned()))?;
-        let ns = metadata.namespace
-            .unwrap_or(DEFAULT_NAMESPACE.to_owned());
-
+        let (name, _, ns) = crd.get_metadata_info()?;
         // get the existing hash...
         let current_hash = match &crd.status {
             Some(st) => st.current.revision.clone(),
@@ -65,12 +57,20 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
             let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
             match apply_res {
                 Ok(_) => {
-                    let status = DecryptorStatus::new(SyncStatus::Sync, None, hash, crd);
-                    status.update_status(&name, &ns).await?;
+                    DecryptorStatus::new(
+                        SyncStatus::Sync, 
+                        None, 
+                        Some(hash), 
+                        crd
+                    ).update_status(&name, &ns).await?;
                 },
                 Err(err) => {
-                    let status = DecryptorStatus::new(SyncStatus::Error,  Some(err.to_string()),  hash,  crd);
-                    status.update_status(&name, &ns).await?;
+                    DecryptorStatus::new(
+                        SyncStatus::Error,  
+                        Some(err.to_string()),  
+                        Some(hash),  
+                        crd
+                    ).update_status(&name, &ns).await?;
                 }
             };
 
@@ -79,7 +79,6 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
 
         info!("No change detected for {filename}");
     }
-
 
     Ok(())
 }

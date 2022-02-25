@@ -11,6 +11,9 @@ use crate::err::Error;
 pub mod status;
 pub mod repo;
 
+// Constant
+const DEFAULT_NAMESPACE: &str = "default";
+
 pub enum ProviderList {
     Gcp(String),
     Aws(String),
@@ -70,5 +73,24 @@ impl Provider {
         }
 
         Ok(ProviderList::None)
+    }
+}
+
+impl Decryptor {
+    /// Get the metadata info needed to perform some operation on the crd
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    pub fn get_metadata_info(&self) -> Result<(String, i64, String), Error> {
+        let metadata = self.metadata.clone();
+
+        let name = metadata.name
+            .ok_or(Error::MissingMetadata("name".to_owned()))?;
+        let generation_id = metadata.generation
+            .ok_or(Error::MissingMetadata("generation_id".to_owned()))?;
+        let ns = metadata.namespace
+            .unwrap_or(DEFAULT_NAMESPACE.to_owned());
+
+        Ok((name, generation_id, ns))
     }
 }
