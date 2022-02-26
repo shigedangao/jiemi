@@ -25,7 +25,7 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
         let stdout = String::from_utf8(cmd.stdout)
             .map_err(|_| Error::Sops("Unable to parse SOPS stdout".to_owned()))?;
         
-        return Ok(stdout);
+        Ok(stdout)
     } else {
         let stderr = String::from_utf8(cmd.stderr)
             .map_err(|err| Error::Sops(err.to_string()))?;

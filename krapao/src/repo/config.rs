@@ -89,7 +89,7 @@ impl GitConfig {
                 let git_uri: Vec<&str> = self.repo_uri.split("https://").collect();
                 match git_uri.get(1) {
                     Some(uri) => Ok(format!("https://{username}:{token}@{}", uri)),
-                    None => return Err(Error::MalformattedURI)
+                    None => Err(Error::MalformattedURI)
                 }
             },
             Credentials::Ssh(_) => {
@@ -115,13 +115,10 @@ impl GitConfig {
         // in the case of SSH we're writing the SSH key to a file
         // and we're setting an environment variable which should
         // allow us to clone the private repo
-        match &self.auth_method {
-            Credentials::Ssh(key) => {
-                helper::set_ssh_key(key)?;
-                helper::export_ssh_key_to_env();
-            },
-            _ => {}
-        };
+        if let Credentials::Ssh(key) = &self.auth_method {
+            helper::set_ssh_key(key)?;
+            helper::export_ssh_key_to_env();
+        }
 
         // clone repository
         let status = Command::new("git")

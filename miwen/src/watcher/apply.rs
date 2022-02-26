@@ -17,6 +17,7 @@ use crate::err::Error;
 
 // Constant
 const API_GROUP_SPLIT: &str = "/";
+const MISSING_NAME_ERR: &str = "❌ Provided resource does not have a name";
 
 #[derive(Deserialize, Debug)]
 struct GvkWrapper {
@@ -71,7 +72,7 @@ async fn create_resource(api: Api<DynamicObject>, patch: DynamicObject) -> Resul
 /// * `patch` - DynamicObject
 async fn patch_resource(api: Api<DynamicObject>, name: &str, patch: DynamicObject) -> Result<(), Error> {
     let res = api.patch(
-        &name, 
+        name, 
         &PatchParams::apply("miwen").force(),
          &Patch::Apply(&patch)
     ).await;
@@ -111,7 +112,7 @@ pub async fn apply_rendered_object(tmpl: String, client: &Client, ns: &str) -> R
     let api: Api<DynamicObject> = Api::namespaced_with(client.clone(), ns, &api_resource);
 
     let res_name = gvk_wrapper.get_name()
-        .ok_or(Error::Watch("❌ Provided resource does not have a name".to_owned()))?;
+        .ok_or_else(|| Error::Watch(MISSING_NAME_ERR.to_owned()))?;
 
     // get a dynamic object to retrieve the metadata...
     let res = api.get(&res_name).await;

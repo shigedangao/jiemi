@@ -88,7 +88,7 @@ impl GenericConfig {
         let creds = self.secret_name.as_ref().zip(self.key.as_ref());
         if let Some((secret_name, key)) = creds {
             let api: Api<Secret> = Api::namespaced(client.clone(), ns);
-            let secret = api.get(&secret_name).await?;
+            let secret = api.get(secret_name).await?;
 
             if let Some(data) = secret.data {
                 if let Some(value) = data.get(key) {

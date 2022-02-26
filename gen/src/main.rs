@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     
     // retrieve a filename path if given
     // not using clap as we're only focusing on a single arg...
-    let path = env::args().nth(1).unwrap_or(".".to_owned());
+    let path = env::args().nth(1).unwrap_or_else(|| ".".to_owned());
     let full_path = format!("{path}/crd.yaml");
 
     let spec = crd::generate_crd().expect("Expect to generate CRD");

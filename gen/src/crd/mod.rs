@@ -85,11 +85,11 @@ impl Decryptor {
         let metadata = self.metadata.clone();
 
         let name = metadata.name
-            .ok_or(Error::MissingMetadata("name".to_owned()))?;
+            .ok_or_else(|| Error::MissingMetadata("name".to_owned()))?;
         let generation_id = metadata.generation
-            .ok_or(Error::MissingMetadata("generation_id".to_owned()))?;
+            .ok_or_else(|| Error::MissingMetadata("generation_id".to_owned()))?;
         let ns = metadata.namespace
-            .unwrap_or(DEFAULT_NAMESPACE.to_owned());
+            .unwrap_or_else(|| DEFAULT_NAMESPACE.to_owned());
 
         Ok((name, generation_id, ns))
     }

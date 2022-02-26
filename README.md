@@ -33,5 +33,4 @@ Need to install openssl@1.1 (osx)
 - [x] Synchronize on CRD changes (by checking the generation_id which is different from the stored one)
 - [x] Synchronize changes from git repository by calling the rpc endpoint from time to time
 - [x] Add a limit to the number of synchronization status in the CRD
-- [ ] Refactor the synchronization code as it's a bit messy...
 - [ ] Add more unit test

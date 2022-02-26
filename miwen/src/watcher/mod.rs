@@ -81,7 +81,7 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     )
         .update_status(&name, &ns).await?;
 
-    return Ok(())
+    Ok(())
 }
 
 /// Create a watcher which will watch the Decryptor resources.

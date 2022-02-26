@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::string::ToString;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
@@ -56,7 +55,7 @@ impl DecryptorStatus {
                 prev.add_current_to_history();
                 (prev.history, prev.current.id)
             },
-            None => (Some(VecDeque::new()), 0 as u64)
+            None => (Some(VecDeque::new()), 0_u64)
         };
 
         let file_to_decrypt = current.spec.source.file_to_decrypt;
@@ -65,7 +64,7 @@ impl DecryptorStatus {
                 status,
                 revision.unwrap_or_default(),
                 file_to_decrypt, 
-                err.and_then(|m| Some(m.to_string())),
+                err,
                 previous_id
             ),
             history
@@ -96,11 +95,11 @@ impl DecryptorStatus {
     pub async fn update_status(self, name: &str, ns: &str) -> Result<(), Error> {
         let client = Client::try_default().await?;
         let api = Api::<Decryptor>::namespaced(client.clone(), ns);
-        let mut curr_decryptor_status = api.get_status(&name).await?;
+        let mut curr_decryptor_status = api.get_status(name).await?;
         curr_decryptor_status.status = Some(self);
 
         api.replace_status(
-            &name,
+            name,
             &PostParams::default(),
             serde_json::to_vec(&curr_decryptor_status)?
         ).await?;
@@ -126,12 +125,12 @@ impl Status {
         previous_id: u64
     ) -> Self {
         Status {
-            deployed_at: Utc::now().to_rfc3339().to_string(),
+            deployed_at: Utc::now().to_rfc3339(),
             id: previous_id + 1,
             revision,
             file_to_decrypt,
             status,
-            error_message: err.and_then(|msg| Some(msg.to_string()))
+            error_message: err
         }
     }
 }

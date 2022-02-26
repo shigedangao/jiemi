@@ -35,16 +35,16 @@ impl CrdService for CrdHandler {
             .map_err(|err| Error::Server(err.to_string()))?;
 
         let config = guard.get(&input.repository)
-            .ok_or(Error::Server(REPO_NOT_EXIST_ERR_MSG.to_owned()))?;
+            .ok_or_else(|| Error::Server(REPO_NOT_EXIST_ERR_MSG.to_owned()))?;
 
         // authenticate with one of the provider
         let input_provider = ProtoProvider::from_i32(input.provider)
-            .ok_or(Error::Server(MISSING_PROVIDER_ERR_MSG.to_owned()))?;
+            .ok_or_else(|| Error::Server(MISSING_PROVIDER_ERR_MSG.to_owned()))?;
 
         let provider = Provider::from(input_provider);
         provider.authenticate(&input.credentials)?;
 
-        let res = sops::decrypt_file(&config, &input.file_to_decrypt, &input.sops_file_path)?;
+        let res = sops::decrypt_file(config, &input.file_to_decrypt, &input.sops_file_path)?;
         let commit_hash = config.get_commit_hash();
 
         Ok(Response::new(ProtoResponse {
