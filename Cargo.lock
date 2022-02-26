@@ -468,6 +468,7 @@ dependencies = [
 name = "gen"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "base64",
  "chrono",
  "color-eyre",
@@ -749,6 +750,7 @@ dependencies = [
  "serde 1.0.136",
  "serde_json",
  "tokio",
+ "toml",
  "tonic",
  "tonic-build",
 ]

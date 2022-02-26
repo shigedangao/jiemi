@@ -1,12 +1,14 @@
 use gen::crd::{
     DecryptorSpec,
-    ProviderList
+    provider::ProviderList
 };
 use tonic::Request;
 use crate::err::Error;
 use self::proto::{
     crd_service_client::CrdServiceClient,
-    Payload
+    Payload,
+    Gcp,
+    Aws
 };
 
 mod proto {
@@ -27,20 +29,28 @@ impl Payload {
         // get the auth provider from the crd
         let provider = spec.provider.to_owned();
         let credentials = provider.get_credentials(ns).await?;
-
-        let (provider_id, creds) = match credentials {
-            ProviderList::Gcp(s) => (0, s),
-            ProviderList::Aws(s) => (1, s),
-            ProviderList::None => (2, "".to_owned())
-        };
-
-        Ok(Payload {
+        let mut payload = Payload {
             file_to_decrypt,
             sops_file_path,
             repository,
-            provider: provider_id,
-            credentials: creds
-        })
+            ..Default::default()
+        };
+
+        match credentials {
+            ProviderList::Gcp(credentials) => {
+                payload.gcp = Some(Gcp { credentials})
+            },
+            ProviderList::Aws(k, i, r) => {
+                payload.aws = Some(Aws {
+                    aws_access_key_id: k,
+                    aws_secret_access_key: i,
+                    region: r
+                })
+            },
+            ProviderList::None => {}
+        };
+
+        Ok(payload)
     }
 }
 

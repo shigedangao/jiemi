@@ -9,13 +9,18 @@ message Payload {
     string fileToDecrypt = 1;
     string sopsFilePath = 2;
     string repository = 3;
-    enum Provider {
-        Gcp = 0;
-        Aws = 1;
-        None = 2;
-    }
-    Provider provider = 4;
-    string credentials = 5;
+    optional Gcp gcp = 4;
+    optional Aws aws = 5;
+}
+
+message Gcp {
+    string credentials = 1;
+}
+
+message Aws {
+    string aws_access_key_id = 1;
+    string aws_secret_access_key = 2;
+    string region = 3;
 }
 
 message Response {

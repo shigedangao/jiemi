@@ -4,7 +4,7 @@ Jiemi is a Kubernetes controller which decrypt and apply Kubernetes specs that h
 
 - Gen: Crate define the CRDs and contains some methods which can be used to manipulate the CRD
 - Miwen: Binary app uses as a kubernetes controller. It checks periodically the CRD and check whenever we need to update the decrypted files
-- Krapao: Binary app uses to 
+- Krapao: Binary app uses to handle repository operations, authenticate with cloud provider & decrypt sops files
 
 ### Miwen
 
