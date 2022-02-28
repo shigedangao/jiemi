@@ -1,3 +1,5 @@
 target
 Env.toml
 krapao/3942338031
+aws-secret.yaml
+credentials.json

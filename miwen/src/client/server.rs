@@ -1,3 +1,4 @@
+use std::time::Duration;
 use gen::crd::{DecryptorSpec, repo::RepositoryCredentials};
 use kube::Client;
 use tonic::Request;
@@ -7,6 +8,7 @@ use self::proto::{
     Payload,
     Credentials
 };
+use super::REQUEST_TIMEOUT;
 
 mod proto {
     tonic::include_proto!("repository");
@@ -55,10 +57,11 @@ pub async fn dispatch_clone_repository(spec: &DecryptorSpec, kube_client: &Clien
         None => None
     };
 
-    let req = Request::new(Payload {
+    let mut req = Request::new(Payload {
         url: spec.source.repository.url.clone(),
         cred
     });
+    req.set_timeout(Duration::from_secs(REQUEST_TIMEOUT));
     
     client.set_repository(req).await
         .map_err(|err| Error::Rpc(err.to_string()))?;

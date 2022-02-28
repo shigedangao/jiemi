@@ -7,18 +7,14 @@ use kube::{
 };
 use status::DecryptorStatus;
 use crate::err::Error;
+use provider::AsyncTryFrom;
 
 pub mod status;
 pub mod repo;
+pub mod provider;
 
 // Constant
 const DEFAULT_NAMESPACE: &str = "default";
-
-pub enum ProviderList {
-    Gcp(String),
-    Aws(String),
-    None
-}
 
 // The implementation is based on
 //
@@ -33,9 +29,10 @@ pub struct DecryptorSpec {
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Provider {
-    gcp: Option<repo::GenericConfig>,
-    aws: Option<repo::GenericConfig>
+    gcp: Option<provider::GcpCredentials>,
+    aws: Option<provider::AwsCredentials>
 }
+
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Source {
@@ -60,19 +57,19 @@ impl Provider {
     /// # Arguments
     /// * `&self` - &Self
     /// * `ns` - &str
-    pub async fn get_credentials(&self, ns: &str) -> Result<ProviderList, Error> {
+    pub async fn get_credentials(&self, ns: &str) -> Result<provider::ProviderList, Error> {
         let client = Client::try_default().await?;
         if let Some(gcp) = self.gcp.clone() {
-            let value = gcp.get_value(&client, ns).await?;
-            return Ok(ProviderList::Gcp(value));
+            let provider = gcp.convert(client, ns).await?;
+            return Ok(provider);
         }
 
         if let Some(aws) = self.aws.clone() {
-            let value = aws.get_value(&client, ns).await?;
-            return Ok(ProviderList::Aws(value));
+            let provider = aws.convert(client, ns).await?;
+            return Ok(provider);
         }
 
-        Ok(ProviderList::None)
+        Ok(provider::ProviderList::None)
     }
 }
 

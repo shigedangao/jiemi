@@ -26,28 +26,64 @@ spec:
                     aws:
                       nullable: true
                       properties:
-                        key:
-                          nullable: true
-                          type: string
-                        literal:
-                          nullable: true
-                          type: string
-                        secretName:
-                          nullable: true
-                          type: string
+                        access_key:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                        key_id:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                        region:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                      required:
+                        - access_key
+                        - key_id
+                        - region
                       type: object
                     gcp:
                       nullable: true
                       properties:
-                        key:
-                          nullable: true
-                          type: string
-                        literal:
-                          nullable: true
-                          type: string
-                        secretName:
-                          nullable: true
-                          type: string
+                        service_account:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                      required:
+                        - service_account
                       type: object
                   type: object
                 source:

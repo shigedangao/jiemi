@@ -1,0 +1,20 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: aws-decryptor
+spec:
+  provider:
+    aws:
+      key_id:
+        secretName: aws-secret
+        key: id
+      access_key:
+        secretName: aws-secret
+        key: access
+      region:
+        literal: eu-west-3
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: aws/foo.enc.yaml
+    sopsPath: aws/.sops.yaml

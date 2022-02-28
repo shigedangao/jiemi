@@ -14,13 +14,15 @@ pub enum Error {
     Server(String),
     Bootstrap(String),
     Sync(String),
-    Sops(String)
+    Sops(String),
+    Encoding(String),
+    Io(String)
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Error::Auth(msg) => write!(f, "Unable to authenticate to git {msg}"),
+            Error::Auth(msg) => write!(f, "Unable to authenticate reasons: {msg}"),
             Error::EmptyRepoURI => write!(f, "Unable to clone repository. Url is empty"),
             Error::MalformattedURI => write!(f, "Repository URL is malformatted"),
             Error::Clone(msg) => write!(f, "Error while cloning repository {msg}"),
@@ -31,7 +33,9 @@ impl std::fmt::Display for Error {
             Error::Server(msg) => write!(f, "gRPC server error: {msg}"),
             Error::Bootstrap(msg) => write!(f, "Initialization problem. State can't be recovered {msg}"),
             Error::Sync(msg) => write!(f, "Issue while syncing repositories {msg}"),
-            Error::Sops(msg) => write!(f, "Error with SOPS: {msg}")
+            Error::Sops(msg) => write!(f, "Error with SOPS: {msg}"),
+            Error::Encoding(msg) => write!(f, "Error while encoding data: {msg}"),
+            Error::Io(msg) => write!(f, "Error while processing doing I/O: {msg}")
         }
     }
 }
@@ -40,7 +44,7 @@ impl std::error::Error for Error {}
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::Clone(err.to_string())
+        Error::Io(err.to_string())
     }
 }
 
@@ -77,5 +81,11 @@ impl From<serde_json::Error> for Error {
 impl From<Error> for Status {
     fn from(err: Error) -> Self {
         Status::internal(err.to_string())
+    }
+}
+
+impl From<toml::ser::Error> for Error {
+    fn from(err: toml::ser::Error) -> Self {
+        Error::Sops(err.to_string())
     }
 }

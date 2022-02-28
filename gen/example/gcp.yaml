@@ -1,0 +1,25 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: gcp-decryptor
+spec:
+  provider:
+    gcp:
+      service_account:
+        secretName: gcp-secret
+        key: mask-336418-5d828a98a0a8.json
+    #aws:
+    #  key_id:
+    #    secretName: aws-secret
+    #    key: aws_key_id
+    #  access_key:
+    #    secretName: aws-secret
+    #    key: acess_key
+    #  region:
+    #    secretName: aws-secret
+    #    key: region
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: test/foo.enc.yaml
+    sopsPath: test/.sops.yaml

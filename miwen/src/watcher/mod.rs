@@ -5,7 +5,7 @@ use kube::{
 };
 use kube::runtime::{
     watcher,
-    utils::try_flatten_applied
+    watcher::Event
 };
 use gen::crd::{
     Decryptor,
@@ -24,9 +24,9 @@ pub mod apply;
 /// * `object` - Decryptor
 /// * `client` - Client
 /// * `state` - State 
-async fn parse_event(object: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
-    info!("Received event");
+async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
     let (name, generation_id, ns) = object.get_metadata_info()?;
+    info!("ℹ️ Change has been detected on {name}");
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
@@ -37,7 +37,7 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
 
     // In order to not create an infinite loop of update...
     // we're checking the generation_id
-    let generation_exist = state::gen_id_exist_from_state(state, name.clone(), generation_id)?;
+    let generation_exist = state::upsert_state(state, name.clone(), generation_id)?;
     if generation_exist {
         info!("no need to update the status for decryptor {name}");
         return Ok(())
@@ -84,6 +84,19 @@ async fn parse_event(object: Decryptor, client: Client, state: state::State) -> 
     Ok(())
 }
 
+/// Process the delete CRD
+/// 
+/// # Arguments
+/// * `crd` - Decryptor
+/// * `state` - State
+fn deleted_crd(crd: Decryptor, state: state::State) -> Result<(), Error> {
+    let (name, _, _) = crd.get_metadata_info()?;
+    state::delete_item_in_state(state, &name)?;
+    info!("🗑️ {name} has been removed");
+
+    Ok(())
+}
+
 /// Create a watcher which will watch the Decryptor resources.
 /// For each Decryptor resource that has been:
 ///     - created
@@ -114,13 +127,31 @@ pub async fn boostrap_watcher(state: state::State) -> Result<(), Error> {
     
     // Watch the Decryptor ressources
     let api: Api<Decryptor> = Api::all(client.clone());
-    let watcher = watcher(api, ListParams::default());
+    let mut watcher = watcher(api, ListParams::default()).boxed();
 
     // Event to listen for create / modified event on the Decryptor resources
-    let mut apply_events = try_flatten_applied(watcher).boxed_local();
-    while let Some(dec) = apply_events.try_next().await? {
-        // spawn in a separate thread in order to process the update asynchronously
-        tokio::spawn( parse_event( dec, client.clone(), state.clone()));
+    // let mut apply_events = try_flatten_applied(watcher).boxed_local();
+    while let Some(event) = watcher.try_next().await? {
+        let state = state.clone();
+        let client = client.clone();
+
+        match event {
+            Event::Applied(dec) => {
+                // spawn in a separate thread in order to process the update asynchronously
+                tokio::spawn( async move {
+                    let res = parse_update_of_crd( dec, client, state).await;
+                    if let Err(err) = res {
+                        error!("{err}");
+                    }
+                });
+            },
+            Event::Deleted(dec) => {
+                if let Err(err) = deleted_crd(dec, state) {
+                    error!("{err}")
+                }
+            },
+            _ => {}
+        };
     }
     
     Ok(())

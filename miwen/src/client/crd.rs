@@ -1,13 +1,17 @@
+use std::time::Duration;
 use gen::crd::{
     DecryptorSpec,
-    ProviderList
+    provider::ProviderList
 };
 use tonic::Request;
 use crate::err::Error;
 use self::proto::{
     crd_service_client::CrdServiceClient,
-    Payload
+    Payload,
+    Gcp,
+    Aws
 };
+use super::REQUEST_TIMEOUT;
 
 mod proto {
     tonic::include_proto!("crd");
@@ -27,20 +31,28 @@ impl Payload {
         // get the auth provider from the crd
         let provider = spec.provider.to_owned();
         let credentials = provider.get_credentials(ns).await?;
-
-        let (provider_id, creds) = match credentials {
-            ProviderList::Gcp(s) => (0, s),
-            ProviderList::Aws(s) => (1, s),
-            ProviderList::None => (2, "".to_owned())
-        };
-
-        Ok(Payload {
+        let mut payload = Payload {
             file_to_decrypt,
             sops_file_path,
             repository,
-            provider: provider_id,
-            credentials: creds
-        })
+            ..Default::default()
+        };
+
+        match credentials {
+            ProviderList::Gcp(credentials) => {
+                payload.gcp = Some(Gcp { credentials})
+            },
+            ProviderList::Aws(k, i, r) => {
+                payload.aws = Some(Aws {
+                    aws_access_key_id: k,
+                    aws_secret_access_key: i,
+                    region: r
+                })
+            },
+            ProviderList::None => {}
+        };
+
+        Ok(payload)
     }
 }
 
@@ -56,7 +68,9 @@ pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec, ns: &str) -> 
     let payload = Payload::new(spec, ns).await?;
 
     // create a request and call the rpc server
-    let req = Request::new(payload);
+    let mut req = Request::new(payload);
+    req.set_timeout(Duration::from_secs(REQUEST_TIMEOUT));
+
     let res = client.render(req).await
         .map_err(|err| Error::Rpc(err.to_string()))?;
 
