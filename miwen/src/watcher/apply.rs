@@ -59,7 +59,7 @@ impl GvkWrapper {
 /// * `patch` - DynamicObject
 async fn create_resource(api: Api<DynamicObject>, patch: DynamicObject) -> Result<(), Error> {
     api.create(&PostParams::default(), &patch).await?;
-    info!("Resource has been created");
+    info!("📝 Resource has been created");
 
     Ok(())
 }
@@ -79,7 +79,7 @@ async fn patch_resource(api: Api<DynamicObject>, name: &str, patch: DynamicObjec
 
     match res {
         Ok(_) => {
-            info!("Resource {name} has been successfully synchronized");
+            info!("🖌️ Resource {name} has been successfully synchronized");
             Ok(())
         },
         Err(err) => {

@@ -16,7 +16,7 @@ pub fn generate_new_state() -> State {
 /// * `state` - State
 /// * `key` - String
 /// * `value` - i64
-pub fn gen_id_exist_from_state(state: State, key: String, value: i64) -> Result<bool, Error> {
+pub fn upsert_state(state: State, key: String, value: i64) -> Result<bool, Error> {
     let mut state = state
         .lock()
         .map_err(|_| Error::Watch("Unable to acquired lock".to_owned()))?;
@@ -48,4 +48,19 @@ pub fn is_registered(state: State, key: &str) -> Result<bool, Error> {
     }
 
     Ok(false)
+}
+
+/// Delete an item in the state. This case is used when a CRD is delete. w/o removing the item, when a crd containing the sma
+/// name is applied. The crd might not take into account the update
+/// 
+/// # Arguments
+/// * `state` - State
+/// * `key` - &str
+pub fn delete_item_in_state(state: State, key: &str) -> Result<(), Error> {
+    let mut state = state.lock()
+        .map_err(|_| Error::Watch("Unable to acquired the lock".to_owned()))?;
+
+    state.remove(key);
+
+    Ok(())
 }

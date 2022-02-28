@@ -1,6 +1,6 @@
 ## Jiemi
 
-Jiemi is a Kubernetes controller which decrypt and apply Kubernetes specs that has been encrypted with [SOPS](https://github.com/mozilla/sops). The project is seperated into 3 seperate Rust projects.
+Jiemi is a Kubernetes controller which decrypt and apply Kubernetes object that has been encrypted with [SOPS](https://github.com/mozilla/sops). The project is divided into 3 Rust projects.
 
 - Gen: Crate define the CRDs and contains some methods which can be used to manipulate the CRD
 - Miwen: Binary app uses as a kubernetes controller. It checks periodically the CRD and check whenever we need to update the decrypted files
@@ -20,9 +20,9 @@ Need to install openssl@1.1 (osx)
 - [x] Expose RPC endpoint to be used by the kubernetes controller
 - [x] Store existing repository in a state to when restarting krapao in order to not clone the repo again...
 - [x] Authenticate with GCP provider
-- [ ] Authenticate with AWS provider 
+- [x] Authenticate with AWS provider 
 - [ ] Uses gpg key
-- [ ] Add more unit test
+- [ ] Add unit test
 
 ## TODO for miwen
 
@@ -34,4 +34,4 @@ Need to install openssl@1.1 (osx)
 - [x] Synchronize changes from git repository by calling the rpc endpoint from time to time
 - [x] Add a limit to the number of synchronization status in the CRD
 - [ ] Add more unit test
-- [ ] Delete an item of the state when a CRD is removed
+- [x] Delete an item of the state when a CRD is removed
