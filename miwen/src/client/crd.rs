@@ -1,3 +1,4 @@
+use std::time::Duration;
 use gen::crd::{
     DecryptorSpec,
     provider::ProviderList
@@ -10,6 +11,7 @@ use self::proto::{
     Gcp,
     Aws
 };
+use super::REQUEST_TIMEOUT;
 
 mod proto {
     tonic::include_proto!("crd");
@@ -66,7 +68,9 @@ pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec, ns: &str) -> 
     let payload = Payload::new(spec, ns).await?;
 
     // create a request and call the rpc server
-    let req = Request::new(payload);
+    let mut req = Request::new(payload);
+    req.set_timeout(Duration::from_secs(REQUEST_TIMEOUT));
+
     let res = client.render(req).await
         .map_err(|err| Error::Rpc(err.to_string()))?;
 

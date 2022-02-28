@@ -15,7 +15,8 @@ pub enum Error {
     Bootstrap(String),
     Sync(String),
     Sops(String),
-    Encoding(String)
+    Encoding(String),
+    Io(String)
 }
 
 impl std::fmt::Display for Error {
@@ -33,7 +34,8 @@ impl std::fmt::Display for Error {
             Error::Bootstrap(msg) => write!(f, "Initialization problem. State can't be recovered {msg}"),
             Error::Sync(msg) => write!(f, "Issue while syncing repositories {msg}"),
             Error::Sops(msg) => write!(f, "Error with SOPS: {msg}"),
-            Error::Encoding(msg) => write!(f, "Error while encoding data: {msg}")
+            Error::Encoding(msg) => write!(f, "Error while encoding data: {msg}"),
+            Error::Io(msg) => write!(f, "Error while processing doing I/O: {msg}")
         }
     }
 }
@@ -42,7 +44,7 @@ impl std::error::Error for Error {}
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Error::Clone(err.to_string())
+        Error::Io(err.to_string())
     }
 }
 

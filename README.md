@@ -34,3 +34,4 @@ Need to install openssl@1.1 (osx)
 - [x] Synchronize changes from git repository by calling the rpc endpoint from time to time
 - [x] Add a limit to the number of synchronization status in the CRD
 - [ ] Add more unit test
+- [ ] Delete an item of the state when a CRD is removed

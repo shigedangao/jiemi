@@ -25,8 +25,8 @@ pub mod apply;
 /// * `client` - Client
 /// * `state` - State 
 async fn parse_event(object: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
-    info!("Received event");
     let (name, generation_id, ns) = object.get_metadata_info()?;
+    info!("ℹ️ Change has been detected on {name}");
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
@@ -119,8 +119,15 @@ pub async fn boostrap_watcher(state: state::State) -> Result<(), Error> {
     // Event to listen for create / modified event on the Decryptor resources
     let mut apply_events = try_flatten_applied(watcher).boxed_local();
     while let Some(dec) = apply_events.try_next().await? {
+        let state = state.clone();
+        let client = client.clone();
         // spawn in a separate thread in order to process the update asynchronously
-        tokio::spawn( parse_event( dec, client.clone(), state.clone()));
+        tokio::spawn( async move {
+            let res = parse_event( dec, client, state).await;
+            if let Err(err) = res {
+                error!("{err}");
+            }
+        });
     }
     
     Ok(())
