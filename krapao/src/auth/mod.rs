@@ -3,10 +3,12 @@ use crate::server::service::crd::proto::Payload;
 
 pub mod gcp;
 pub mod aws;
+pub mod pgp;
 
 pub enum Provider {
     Gcp(String),
     Aws(String, String, String),
+    Pgp(String),
     None
 }
 
@@ -28,6 +30,10 @@ impl Provider {
             )
         }
 
+        if let Some(key) = payload.pgp.clone() {
+            return Provider::Pgp(key.private_key)
+        }
+
         Provider::None
     }
 
@@ -39,6 +45,7 @@ impl Provider {
         match self {
             Provider::Gcp(credentials) => gcp::set_authentication_file_for_gcp(credentials),
             Provider::Aws(id, key, region) => aws::authenticate(id, key, region),
+            Provider::Pgp(key) => pgp::authenticate_with_pgp(key),
             Provider::None => Ok(())
         }
     }

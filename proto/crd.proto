@@ -11,6 +11,7 @@ message Payload {
     string repository = 3;
     optional Gcp gcp = 4;
     optional Aws aws = 5;
+    optional Pgp pgp = 6;
 }
 
 message Gcp {
@@ -21,6 +22,10 @@ message Aws {
     string aws_access_key_id = 1;
     string aws_secret_access_key = 2;
     string region = 3;
+}
+
+message Pgp {
+    string private_key = 1;
 }
 
 message Response {
