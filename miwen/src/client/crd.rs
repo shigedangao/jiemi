@@ -1,7 +1,7 @@
 use std::time::Duration;
 use gen::crd::{
     DecryptorSpec,
-    provider::ProviderList
+    provider::{ProviderList}
 };
 use tonic::Request;
 use crate::err::Error;
@@ -9,7 +9,8 @@ use self::proto::{
     crd_service_client::CrdServiceClient,
     Payload,
     Gcp,
-    Aws
+    Aws,
+    Pgp
 };
 use super::REQUEST_TIMEOUT;
 
@@ -49,6 +50,11 @@ impl Payload {
                     region: r
                 })
             },
+            ProviderList::Pgp(k) => {
+                payload.pgp = Some(Pgp {
+                    private_key: k
+                })
+            }
             ProviderList::None => {}
         };
 

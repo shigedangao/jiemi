@@ -85,6 +85,24 @@ spec:
                       required:
                         - service_account
                       type: object
+                    pgp:
+                      nullable: true
+                      properties:
+                        privateKey:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                      required:
+                        - privateKey
+                      type: object
                   type: object
                 source:
                   properties:

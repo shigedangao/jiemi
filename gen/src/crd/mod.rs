@@ -30,7 +30,8 @@ pub struct DecryptorSpec {
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Provider {
     gcp: Option<provider::GcpCredentials>,
-    aws: Option<provider::AwsCredentials>
+    aws: Option<provider::AwsCredentials>,
+    pgp: Option<provider::PgpCredentials>
 }
 
 
@@ -66,6 +67,11 @@ impl Provider {
 
         if let Some(aws) = self.aws.clone() {
             let provider = aws.convert(client, ns).await?;
+            return Ok(provider);
+        }
+
+        if let Some(pgp) = self.pgp.clone() {
+            let provider = pgp.convert(client, ns).await?;
             return Ok(provider);
         }
 

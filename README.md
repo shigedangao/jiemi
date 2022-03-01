@@ -21,7 +21,7 @@ Need to install openssl@1.1 (osx)
 - [x] Store existing repository in a state to when restarting krapao in order to not clone the repo again...
 - [x] Authenticate with GCP provider
 - [x] Authenticate with AWS provider 
-- [ ] Uses gpg key
+- [x] Support pgp key - note: pgp key w/o pwd
 - [ ] Add unit test
 
 ## TODO for miwen
@@ -35,3 +35,13 @@ Need to install openssl@1.1 (osx)
 - [x] Add a limit to the number of synchronization status in the CRD
 - [ ] Add more unit test
 - [x] Delete an item of the state when a CRD is removed
+
+## Note on PGP
+
+Extract key to import on SOPS
+
+```sh
+gpg --export-secret-keys --armor <fingerprint> > private.rsa
+```
+
+On OSX we might need to export an env var due to issue with gpg. See [here](https://jhooq.com/failed-to-get-the-data-key/)

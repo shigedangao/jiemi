@@ -8,6 +8,7 @@ use crate::err::Error;
 pub enum ProviderList {
     Gcp(String),
     Aws(String, String, String),
+    Pgp(String),
     None
 }
 
@@ -21,6 +22,12 @@ pub struct AwsCredentials {
     key_id: GenericConfig,
     access_key: GenericConfig,
     region: GenericConfig
+}
+
+#[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
+pub struct PgpCredentials {
+    #[serde(rename = "privateKey")]
+    private_key: GenericConfig
 }
 
 #[async_trait]
@@ -54,5 +61,17 @@ impl AsyncTryFrom for AwsCredentials {
         let region = self.region.get_value(&client, &ns).await?;
 
         Ok(ProviderList::Aws(id, key, region))
+    }
+}
+
+#[async_trait]
+impl AsyncTryFrom for PgpCredentials {
+    type Error = Error;
+    type Output = ProviderList;
+
+    async fn convert(&self, client: Client, ns: &str) -> Result<Self::Output, Self::Error> {
+        let key = self.private_key.get_value(&client, ns).await?;
+
+        Ok(ProviderList::Pgp(key))
     }
 }
