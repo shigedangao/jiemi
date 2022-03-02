@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: miwen
+  labels:
+    workload: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload: controller
+  template:
+    metadata:
+      labels:
+        workload: controller
+    spec:
+      containers:
+      - name: controller
+        image: miwen:latest
+        env:
+          MODE: "release"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: repository-svc
+  labels:
+    app: repository
+spec:
+  ports:
+  - port: 50208
+    name: rpc
+  selector:
+    app: repository
+---
+apiVersion: apps/v1
+kind: Statefulset
+metadata:
+  name: repository
+  labels:
+    workload: repository
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload: repository
+  template:
+    metadata:
+      labels:
+        workload: repository
+    spec:
+      containers:
+      - name: repository
+        image: krapao:latest
+        ports:
+        - containerPort: 50208
+          name: rpc
+        volumeMounts:
+        - name: data
+          mountPath: /workspace/repo
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
