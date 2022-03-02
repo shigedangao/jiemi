@@ -48,7 +48,7 @@ impl Credentials {
 /// * `ns` - &str
 pub async fn dispatch_clone_repository(spec: &DecryptorSpec, kube_client: &Client, ns: &str) -> Result<(), Error> {
     info!("Rpc call to clone the target repository...");
-    let mut client = RepoServiceClient::connect("http://[::1]:50208").await?;
+    let mut client = RepoServiceClient::connect(super::get_rpc_addr()).await?;
     // request to grpc server
     // build credentials
     let spec_creds = spec.source.repository.credentials.clone();

@@ -45,3 +45,13 @@ gpg --export-secret-keys --armor <fingerprint> > private.rsa
 ```
 
 On OSX we might need to export an env var due to issue with gpg. See [here](https://jhooq.com/failed-to-get-the-data-key/)
+
+# Build dockerfile
+
+## Miwen
+
+docker build -f .build/Dockerfile.miwen -t jiemi/miwen .
+
+## Krapao
+
+docker build -f .build/Dockerfile.krapao -t jiemi/krapao .
