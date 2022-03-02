@@ -1,0 +1,55 @@
+# Based on https://dev.to/rogertorres/first-steps-with-docker-rust-30oi
+FROM rust:1.59 as build
+
+# Create an empty rust project to accelerate the build time
+RUN cargo new --bin krapao
+RUN cargo new --lib gen
+RUN cargo new --bin miwen
+
+# Copy workspace manifest
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
+
+# Copy projects manifest
+COPY ./krapao/Cargo.toml ./krapao/Cargo.toml
+COPY ./gen/Cargo.toml ./gen/Cargo.toml
+COPY ./miwen/Cargo.toml ./miwen/Cargo.toml
+
+# Build dependencies
+WORKDIR /krapao
+
+RUN cargo build --release
+
+# Remove generated source code
+WORKDIR /
+RUN rm ./krapao/src/*.rs
+RUN rm ./gen/src/*.rs
+RUN rm ./miwen/src/*.rs
+
+# Copy source tree
+COPY ./krapao/src ./krapao/src
+COPY ./gen/src ./gen/src
+COPY ./miwen/src ./miwen/src
+COPY ./proto ./proto
+
+# Copy build.rs
+COPY ./krapao/build.rs ./krapao/build.rs
+COPY ./miwen/build.rs ./miwen/build.rs
+
+# Remove deps
+WORKDIR /
+RUN rm ./target/release/deps/krapao*
+
+# Build the release 
+WORKDIR /krapao
+RUN rustup component add rustfmt
+RUN cargo build --release
+
+# Final build uses to hold the binary only
+FROM rust:1.59-slim-buster
+
+# copy the generated build
+COPY --from=build /target/release/krapao .
+
+# Run the krapao binary
+CMD ["./krapao"]
