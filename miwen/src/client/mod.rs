@@ -13,5 +13,5 @@ fn get_rpc_addr() -> String {
     }
 
     // use on local dev
-    "http://[::1]:50208".to_owned()
+    "http://127.0.0.1:50208".to_owned()
 }

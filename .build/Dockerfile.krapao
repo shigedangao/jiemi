@@ -43,10 +43,11 @@ RUN rm ./target/release/deps/krapao*
 # Build the release 
 WORKDIR /krapao
 RUN rustup component add rustfmt
+RUN 
 RUN cargo build --release
 
 # Final build uses to hold the binary only
-FROM rust:1.59-slim-buster
+FROM rust:1.59-bullseye
 
 # copy the generated build
 COPY --from=build /target/release/krapao .

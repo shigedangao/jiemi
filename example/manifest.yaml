@@ -1,7 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jiemi-role
+rules:
+- apiGroups: ["", "jiemi.cr"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jiemie-role-binding
+subjects:
+- kind: ServiceAccount
+  name: jiemi-account
+  namespace: jiemi
+roleRef:
+  kind: ClusterRole
+  name: jiemi-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jiemi-account
+  namespace: jiemi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: miwen
+  namespace: jiemi
   labels:
     workload: controller
 spec:
@@ -14,16 +43,19 @@ spec:
       labels:
         workload: controller
     spec:
+      serviceAccountName: jiemi-account
       containers:
       - name: controller
-        image: miwen:latest
+        image: marci/miwen:latest
         env:
-          MODE: "release"
+        - name: MODE
+          value: "release"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: repository-svc
+  namespace: jiemi
   labels:
     app: repository
 spec:
@@ -34,9 +66,10 @@ spec:
     app: repository
 ---
 apiVersion: apps/v1
-kind: Statefulset
+kind: StatefulSet
 metadata:
   name: repository
+  namespace: jiemi
   labels:
     workload: repository
 spec:
@@ -44,6 +77,7 @@ spec:
   selector:
     matchLabels:
       workload: repository
+  serviceName: repository-svc
   template:
     metadata:
       labels:
@@ -51,13 +85,13 @@ spec:
     spec:
       containers:
       - name: repository
-        image: krapao:latest
+        image: marci/krapao:latest
         ports:
         - containerPort: 50208
           name: rpc
         volumeMounts:
         - name: data
-          mountPath: /workspace/repo
+          mountPath: /home/workspace/repo
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -65,4 +99,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: 500Mi
