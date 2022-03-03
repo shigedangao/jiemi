@@ -9,9 +9,11 @@ use crate::err::Error;
 /// * `target_file_path` - &str
 /// * `sops_file_path` - &str
 pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: &str) -> Result<String, Error> {
-    let file_path = config.target.to_str().unwrap_or_default();
-    let t_file_path = format!("{}/{target_file_path}", file_path);
-    let s_file_path = format!("{}/{sops_file_path}", file_path);
+    let mut t_file_path = config.target.clone();
+    t_file_path.push(target_file_path);
+
+    let mut s_file_path = config.target.clone();
+    s_file_path.push(sops_file_path);
     
     info!("Trying to decrypt {target_file_path}...");
     let cmd = Command::new("sops")

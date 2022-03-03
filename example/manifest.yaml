@@ -57,13 +57,14 @@ metadata:
   name: repository-svc
   namespace: jiemi
   labels:
-    app: repository
+    workload: repository
 spec:
   ports:
   - port: 50208
     name: rpc
+    targetPort: 50208
   selector:
-    app: repository
+    workload: repository
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -89,9 +90,12 @@ spec:
         ports:
         - containerPort: 50208
           name: rpc
+        env:
+          - name: MODE
+            value: release
         volumeMounts:
         - name: data
-          mountPath: /home/workspace/repo
+          mountPath: /root/workspace/repo
   volumeClaimTemplates:
   - metadata:
       name: data
