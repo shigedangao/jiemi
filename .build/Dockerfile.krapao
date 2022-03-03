@@ -46,11 +46,17 @@ RUN rustup component add rustfmt
 RUN 
 RUN cargo build --release
 
+# Building SOPS
+FROM golang:1.17.7-bullseye as sops-build
+
+RUN go install go.mozilla.org/sops/v3/cmd/sops@latest
+
 # Final build uses to hold the binary only
 FROM rust:1.59-bullseye
 
 # copy the generated build
 COPY --from=build /target/release/krapao .
+COPY --from=sops-build /go/bin/sops /usr/local/bin/sops
 
 # Run the krapao binary
 CMD ["./krapao"]

@@ -14,7 +14,7 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
 
     let mut s_file_path = config.target.clone();
     s_file_path.push(sops_file_path);
-    
+
     info!("Trying to decrypt {target_file_path}...");
     let cmd = Command::new("sops")
         .arg("-d")
