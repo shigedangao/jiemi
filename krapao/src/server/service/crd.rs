@@ -41,6 +41,8 @@ impl CrdService for CrdHandler {
         let res = sops::decrypt_file(config, &input.file_to_decrypt, &input.sops_file_path)?;
         let commit_hash = config.get_commit_hash();
 
+        info!("✅ File has been decrypted. Sending back data to miwen");
+
         Ok(Response::new(ProtoResponse {
             resource: res,
             commit_hash

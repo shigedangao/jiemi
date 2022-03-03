@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use serde::{Serialize, Deserialize};
 use crate::err::Error;
@@ -42,7 +42,7 @@ impl Credentials {
 pub struct GitConfig {
     auth_method: Credentials,
     pub repo_uri: String,
-    pub target: String
+    pub target: PathBuf
 }
 
 impl GitConfig {
@@ -52,7 +52,7 @@ impl GitConfig {
     /// * `auth_method` - Credentials
     /// * `repo_uri` - &str
     /// * `target` - &str
-    pub fn new(auth_method: Credentials, repo_uri: &str, target: &str) -> Result<Self, Error> {
+    pub fn new(auth_method: Credentials, repo_uri: &str, target: PathBuf) -> Result<Self, Error> {
         if repo_uri.is_empty() {
             return Err(Error::EmptyRepoURI);
         }
@@ -60,7 +60,7 @@ impl GitConfig {
         Ok(GitConfig {
             auth_method,
             repo_uri: repo_uri.to_owned(),
-            target: target.to_owned()
+            target: target
         })
     }
 
@@ -215,7 +215,7 @@ mod tests {
         let handle = GitConfig::new(
             credentials, 
             "https://github.com/shigedangao/gogo.git",
-             "../../test"
+             PathBuf::from("../../test")
         ).unwrap();
         
         assert!(handle.init_repository().is_ok());
@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn expect_to_not_clone_repo() {
         let credentials = Credentials::Empty;
-        let handle = GitConfig::new(credentials, "", "");
+        let handle = GitConfig::new(credentials, "", PathBuf::new());
         assert_eq!(handle.unwrap_err(), Error::EmptyRepoURI);
     }
 
@@ -240,7 +240,7 @@ mod tests {
         let handle = GitConfig::new(
             credentials, 
             "https://github.com/shigedangao/mask-kube.git",
-            "../../gogo"
+            PathBuf::from("../../gogo")
         ).unwrap();
 
         assert!(handle.init_repository().is_ok());
@@ -253,7 +253,7 @@ mod tests {
         let handle = GitConfig::new(
             credentials,
             "git@github.com:shigedangao/wurkflow.git",
-            "../../wurkflow"
+            PathBuf::from("../../wurkflow")
         ).unwrap();
 
         assert!(handle.init_repository().is_ok());

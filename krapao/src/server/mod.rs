@@ -19,7 +19,18 @@ pub mod service;
 /// * `state` - State
 pub async fn bootstrap_server(state: State) -> Result<(), Error> {
     info!("Gearing up the krapao server");
-    let addr = "[::1]:50208".parse()
+    let addr = match std::env::var_os("MODE") {
+        Some(res) => {
+            if res == "release" {
+                "0.0.0.0"
+            } else {
+                "127.0.0.1"
+            }
+        },
+        None => "127.0.0.1"
+    };
+
+    let addr = format!("{addr}:50208").parse()
         .map_err(|_| Error::Server("Unable to allocate address".to_owned()))?;
 
     Server::builder()

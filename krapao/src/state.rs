@@ -11,7 +11,7 @@ const REPO_FILE_PATH: &str = "./list.json";
 // Alias type
 pub type State = Arc<Mutex<HashMap<String, GitConfig>>>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 struct List {
     repositories: Option<HashMap<String, GitConfig>>
 }
@@ -23,7 +23,17 @@ struct List {
 /// If an existing state exist. Then retrieve the state and use it. This 
 pub fn create_state() -> Result<State, Error>  {
     // import existing state in a config file
-    let saved_state = fs::read(REPO_FILE_PATH)?;
+    let saved_state = match fs::read(REPO_FILE_PATH) {
+        Ok(res) => res,
+        Err(_) => {
+            // if the file could not be read, it means that it does not exist. So create it
+            let list = List::default();
+            let json = serde_json::to_string_pretty(&list)?;
+            fs::write(REPO_FILE_PATH, &json)?;
+
+            json.as_bytes().to_vec()
+        }
+    };
 
     let list: List = serde_json::from_slice(&saved_state)?;
     if let Some(existing_state) = list.repositories {

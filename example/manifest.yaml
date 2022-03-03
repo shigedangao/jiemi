@@ -1,0 +1,106 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: jiemi-role
+rules:
+- apiGroups: ["", "jiemi.cr"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jiemie-role-binding
+subjects:
+- kind: ServiceAccount
+  name: jiemi-account
+  namespace: jiemi
+roleRef:
+  kind: ClusterRole
+  name: jiemi-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jiemi-account
+  namespace: jiemi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: miwen
+  namespace: jiemi
+  labels:
+    workload: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload: controller
+  template:
+    metadata:
+      labels:
+        workload: controller
+    spec:
+      serviceAccountName: jiemi-account
+      containers:
+      - name: controller
+        image: marci/miwen:latest
+        env:
+        - name: MODE
+          value: "release"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: repository-svc
+  namespace: jiemi
+  labels:
+    workload: repository
+spec:
+  ports:
+  - port: 50208
+    name: rpc
+    targetPort: 50208
+  selector:
+    workload: repository
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: repository
+  namespace: jiemi
+  labels:
+    workload: repository
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload: repository
+  serviceName: repository-svc
+  template:
+    metadata:
+      labels:
+        workload: repository
+    spec:
+      containers:
+      - name: repository
+        image: marci/krapao:latest
+        ports:
+        - containerPort: 50208
+          name: rpc
+        env:
+          - name: MODE
+            value: release
+        volumeMounts:
+        - name: data
+          mountPath: /root/workspace/repo
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 500Mi
