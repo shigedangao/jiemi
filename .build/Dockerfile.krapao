@@ -54,6 +54,18 @@ RUN go install go.mozilla.org/sops/v3/cmd/sops@latest
 # Final build uses to hold the binary only
 FROM rust:1.59-bullseye
 
+# Install google cloud cli
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-375.0.0-linux-x86_64.tar.gz
+RUN tar -xf google-cloud-sdk-375.0.0-linux-x86_64.tar.gz
+RUN ./google-cloud-sdk/install.sh
+RUN rm google-cloud-sdk-375.0.0-linux-x86_64.tar.gz
+
+# Install aws cli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+RUN rm awscliv2.zip
+
 # copy the generated build
 COPY --from=build /target/release/krapao .
 COPY --from=sops-build /go/bin/sops /usr/local/bin/sops

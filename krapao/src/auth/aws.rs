@@ -32,6 +32,7 @@ struct AwsRegion {
 /// * `access_key` - String
 /// * `secret_key` - String
 fn write_aws_credentials_file(access_key: String, secret_key: String) -> Result<(), Error> {
+    // @TODO, create path if not exist
     let mut aws_path = dirs::home_dir()
         .ok_or_else(|| Error::Io("Home dir could not be founded".to_owned()))?;
 

@@ -6,6 +6,7 @@ use crate::repo::config::GitConfig;
 use crate::err::Error;
 
 // Constant
+// @TODO maybe use other path...
 const REPO_FILE_PATH: &str = "./list.json";
 
 // Alias type
