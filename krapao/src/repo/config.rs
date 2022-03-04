@@ -60,7 +60,7 @@ impl GitConfig {
         Ok(GitConfig {
             auth_method,
             repo_uri: repo_uri.to_owned(),
-            target: target
+            target
         })
     }
 

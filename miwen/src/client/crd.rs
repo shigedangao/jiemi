@@ -66,6 +66,7 @@ impl Payload {
 /// 
 /// # Arguments
 /// * `spec` - &DecryptorSpec
+/// * `ns` - &str
 pub async fn get_decrypted_kubernetes_object(spec: &DecryptorSpec, ns: &str) -> Result<(String, String), Error> {
     info!("Rpc call to retrieve the decrypted kubernetes file...");
     let mut client = CrdServiceClient::connect(super::get_rpc_addr()).await?;

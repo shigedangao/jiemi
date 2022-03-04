@@ -1,8 +1,7 @@
 use std::fs;
-use std::io::ErrorKind;
-use std::path::PathBuf;
 use serde::Serialize;
 use crate::err::Error;
+use crate::helper;
 
 // Constant
 const AWS_CONFIG_FOLDER: &str = ".aws";
@@ -29,24 +28,6 @@ struct AwsRegion {
     output: String
 }
 
-/// Create the aws path if the path does not exist
-/// 
-/// # Arguments
-/// * `path` - &PathBuf
-fn create_aws_path(path: &PathBuf) -> Result<(), Error> {
-    if let Err(err) = fs::create_dir_all(path) {
-        if err.kind() == ErrorKind::AlreadyExists {
-            info!("🔍 AWS path already exist");
-            return Ok(())
-        }
-
-        return Err(Error::from(err))
-    }
-
-    info!("📜 AWS credentials path has been created");
-    Ok(())
-}
-
 /// Write credentials file (~/.aws/credentials)
 /// 
 /// * `access_key` - String
@@ -59,7 +40,7 @@ fn write_aws_credentials_file(access_key: String, secret_key: String) -> Result<
     aws_path.push(AWS_CREDENTIALS_PATH);
 
     // create the path if it does not exist
-    create_aws_path(&aws_path)?;
+    helper::create_path(&aws_path)?;
 
     let profile = AwsCredentials {
         aws_access_key_id: access_key,
