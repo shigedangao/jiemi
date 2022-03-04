@@ -30,13 +30,13 @@ pub fn export_ssh_key_to_env() {
 pub fn create_path(path: &Path) -> Result<(), Error> {
     if let Err(err) = fs::create_dir_all(path) {
         if err.kind() == ErrorKind::AlreadyExists {
-            info!("🔍 AWS path already exist");
+            info!("🔍 Path already exist");
             return Ok(())
         }
 
         return Err(Error::from(err))
     }
 
-    info!("📜 AWS credentials path has been created");
+    info!("📜 Credentials path has been created");
     Ok(())
 }

@@ -35,12 +35,13 @@ struct AwsRegion {
 fn write_aws_credentials_file(access_key: String, secret_key: String) -> Result<(), Error> {
     let mut aws_path = dirs::home_dir()
         .ok_or_else(|| Error::Io("Home dir could not be founded".to_owned()))?;
-
     aws_path.push(AWS_CONFIG_FOLDER);
-    aws_path.push(AWS_CREDENTIALS_PATH);
 
     // create the path if it does not exist
     helper::create_path(&aws_path)?;
+
+    let mut credentials_path = aws_path.clone();
+    credentials_path.push(AWS_CREDENTIALS_PATH);
 
     let profile = AwsCredentials {
         aws_access_key_id: access_key,
@@ -53,7 +54,7 @@ fn write_aws_credentials_file(access_key: String, secret_key: String) -> Result<
     })?;
     let cleaned_toml = clean_generated_toml_string(&toml);
 
-    fs::write(aws_path, cleaned_toml)?;
+    fs::write(credentials_path, cleaned_toml)?;
 
     Ok(())
 }

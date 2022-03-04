@@ -60,7 +60,11 @@ pub fn create_state() -> Result<State, Error>  {
 /// # Arguments
 /// * `config` - GitConfig
 pub fn save_new_repo_in_persistent_state(config: GitConfig) -> Result<(), Error> {
-    let saved_state = fs::read(REPO_FILE_PATH)?;
+    let mut file_path = home_dir().unwrap_or_default();
+    file_path.push(REPO_PATH);
+    file_path.push(REPO_FILE_PATH);
+
+    let saved_state = fs::read(&file_path)?;
     let mut list: List = serde_json::from_slice(&saved_state)?;
 
     if let Some(existing_state) = list.repositories.as_mut() {
@@ -74,7 +78,7 @@ pub fn save_new_repo_in_persistent_state(config: GitConfig) -> Result<(), Error>
 
     // now encrypt back the repo
     let json = serde_json::to_string_pretty(&list)?;
-    fs::write(REPO_FILE_PATH, json)?;
+    fs::write(file_path, json)?;
 
     Ok(())
 }
@@ -85,7 +89,11 @@ pub fn save_new_repo_in_persistent_state(config: GitConfig) -> Result<(), Error>
 /// # Arguments
 /// * `key` - &str
 pub fn remove_repo_from_persistent_state(key: &str) -> Result<(), Error> {
-    let saved_state = fs::read(REPO_FILE_PATH)?;
+    let mut file_path = home_dir().unwrap_or_default();
+    file_path.push(REPO_PATH);
+    file_path.push(REPO_FILE_PATH);
+
+    let saved_state = fs::read(&file_path)?;
     let mut list: List = serde_json::from_slice(&saved_state)?;
 
     if let Some(existing_state) = list.repositories.as_mut() {
@@ -93,7 +101,7 @@ pub fn remove_repo_from_persistent_state(key: &str) -> Result<(), Error> {
     }
 
     let json = serde_json::to_string_pretty(&list)?;
-    fs::write(REPO_FILE_PATH, json)?;
+    fs::write(file_path, json)?;
     
     Ok(())
 }
