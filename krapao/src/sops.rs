@@ -36,3 +36,20 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
         Err(Error::Sops(stderr))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn expect_to_decrypt_sops_file() {
+        let encrypted_file_path = "../example/sops/encrypted.yaml";
+        let sops_file_path = "../example/sops/.sops.yaml";
+
+        let config = GitConfig::default();
+        let res = decrypt_file(&config, encrypted_file_path, sops_file_path);
+
+        println!("{res:?}");
+        assert!(res.is_ok());
+    }
+}

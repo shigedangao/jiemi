@@ -1,5 +1,5 @@
 use crate::err::Error;
-use crate::env::Env;
+use crate::env::GitCredentials;
 use self::config::{Credentials, GitConfig};
 
 pub mod config;
@@ -7,8 +7,8 @@ pub mod config;
 /// Initialize the git repository handler
 /// 
 /// # Arguments
-/// * `env` - &Env
-pub fn initialize_git(env: &Env) -> Result<GitConfig, Error> {
+/// * `env` - &GitCredentials
+pub fn initialize_git(env: &GitCredentials) -> Result<GitConfig, Error> {
     // retrieve the environment variable for git credentials
     let credentials = Credentials::new(env);
 

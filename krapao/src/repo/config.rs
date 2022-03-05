@@ -4,7 +4,7 @@ use std::process::Command;
 use serde::{Serialize, Deserialize};
 use crate::err::Error;
 use crate::helper;
-use crate::env::Env;
+use crate::env::GitCredentials;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Credentials {
@@ -23,8 +23,8 @@ impl Credentials {
     /// Create a new Credential from the Env
     /// 
     /// # Arguments
-    /// * `env` - &Env
-    pub fn new(env: &Env) -> Self {
+    /// * `env` - &GitCredentials
+    pub fn new(env: &GitCredentials) -> Self {
         let credentials = env.username.clone().zip(env.token.clone());
         if let Some((username, token)) = credentials {
             return Credentials::Token(username, token);

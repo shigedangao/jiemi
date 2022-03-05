@@ -9,7 +9,7 @@ use crate::server::service::repo::proto::Payload;
 const REPOSITORY_PATH: &str = "workspace/repo";
 
 #[derive(Debug, Default, Deserialize)]
-pub struct Env {
+pub struct GitCredentials {
     pub username: Option<String>,
     pub token: Option<String>,
     pub repository: String,
@@ -18,7 +18,7 @@ pub struct Env {
     pub sync_interval: Option<u64>
 }
 
-impl From<Payload> for Env {
+impl From<Payload> for GitCredentials {
     fn from(p: Payload) -> Self {
         let mut rng = rand::thread_rng();
 
@@ -26,7 +26,7 @@ impl From<Payload> for Env {
         dir.push(REPOSITORY_PATH);
         dir.push(rng.gen::<u32>().to_string());
 
-        let mut env = Env {
+        let mut env = GitCredentials {
             repository: p.url,
             target: dir,
             sync_interval: Some(1800),

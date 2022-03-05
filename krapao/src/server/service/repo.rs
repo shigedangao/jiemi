@@ -5,7 +5,7 @@ use self::proto::{
     Response as ProtoResponse,
 };
 use crate::repo;
-use crate::env::Env;
+use crate::env::GitCredentials;
 use crate::state;
 use crate::err::Error;
 
@@ -36,7 +36,7 @@ impl RepoService for RepoHandler {
     ) -> Result<Response<ProtoResponse>, Status> {
         let input = request.into_inner();
         // retrieve the env from the request
-        let env = Env::from(input);
+        let env = GitCredentials::from(input);
         // retrieve the state
         let mut state = self.state.lock()
             .map_err(|err| Error::Server(err.to_string()))?;
@@ -75,7 +75,7 @@ impl RepoService for RepoHandler {
     ) -> Result<Response<ProtoResponse>, Status> {
         let input = request.into_inner();
         // convert the input as an Env
-        let env = Env::from(input);
+        let env = GitCredentials::from(input);
         // get the state
         let mut state = self.state.lock()
             .map_err(|err| Error::Server(err.to_string()))?;
