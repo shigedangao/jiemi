@@ -35,6 +35,13 @@ pub trait AsyncTryFrom {
     type Error;
     type Output;
 
+    /// Convert a Credential to a ProviderList. Because async method can't be used on trait. We have to implement a From
+    /// method with async_trait crate
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    /// * `client` - Client
+    /// * `ns` - &str
     async fn convert(&self, client: Client, ns: &str) -> Result<Self::Output, Self::Error>;
 }
 
@@ -44,7 +51,7 @@ impl AsyncTryFrom for GcpCredentials {
     type Output = ProviderList;
 
     async fn convert(&self, client: Client, ns: &str) -> Result<Self::Output, Self::Error> {
-        let value = self.service_account.get_value(&client, &ns).await?;
+        let value = self.service_account.get_value(&client, ns).await?;
 
         Ok(ProviderList::Gcp(value))
     }
@@ -56,9 +63,9 @@ impl AsyncTryFrom for AwsCredentials {
     type Output = ProviderList;
 
     async fn convert(&self, client: Client, ns: &str) -> Result<Self::Output, Self::Error> {
-        let id = self.key_id.get_value(&client, &ns).await?;
-        let key = self.access_key.get_value(&client, &ns).await?;
-        let region = self.region.get_value(&client, &ns).await?;
+        let id = self.key_id.get_value(&client, ns).await?;
+        let key = self.access_key.get_value(&client, ns).await?;
+        let region = self.region.get_value(&client, ns).await?;
 
         Ok(ProviderList::Aws(id, key, region))
     }

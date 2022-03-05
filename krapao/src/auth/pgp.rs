@@ -27,4 +27,15 @@ pub fn authenticate_with_pgp(key: &str) -> Result<(), Error> {
     info!("🔑 PGP key registered");
 
     Ok(())
-} 
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn expect_to_not_register_private_key() {
+        let dummy_private_key = "foo-bar";
+        let res = super::authenticate_with_pgp(dummy_private_key);
+
+        assert!(res.is_err());
+    }
+}

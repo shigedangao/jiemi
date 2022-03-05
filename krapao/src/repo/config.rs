@@ -51,7 +51,7 @@ impl GitConfig {
     /// # Arguments
     /// * `auth_method` - Credentials
     /// * `repo_uri` - &str
-    /// * `target` - &str
+    /// * `target` - PathBuf
     pub fn new(auth_method: Credentials, repo_uri: &str, target: PathBuf) -> Result<Self, Error> {
         if repo_uri.is_empty() {
             return Err(Error::EmptyRepoURI);
@@ -191,20 +191,31 @@ impl GitConfig {
 
 #[cfg(test)]
 mod tests {
+    use serde::Deserialize;
     use config::{Config, File};
     use super::*;
+
+    #[derive(Deserialize)]
+    struct TestRepoConfig {
+        #[serde(rename(deserialize = "GIT_USERNAME"))]
+        username: String,
+        #[serde(rename(deserialize = "GIT_TOKEN"))]
+        token: String,
+        #[serde(rename(deserialize = "GIT_SSH_KEY"))]
+        ssh: String
+    }
 
     /// Load environment variable from the Env.toml file
     /// This is only used in the dev environment. this method is only used for local test purposes
     /// 
     /// # Arguments
     /// * `&self` - &Env
-    fn load_local_env() -> Result<Env, Error> {
+    fn load_local_env() -> Result<TestRepoConfig, Error> {
         info!("Loading local environment variable");
         let mut settings = Config::default();
         settings.merge(File::with_name("Env"))?;
 
-        let env = settings.try_into::<Env>()?;
+        let env = settings.try_into::<TestRepoConfig>()?;
         
         Ok(env)
     }
@@ -236,7 +247,7 @@ mod tests {
     fn expect_to_clone_private_repo() {
         // read the env as the token is stored in the env
         let env = load_local_env().unwrap();
-        let credentials = Credentials::Token(env.username.unwrap(), env.token.unwrap());
+        let credentials = Credentials::Token(env.username, env.token);
         let handle = GitConfig::new(
             credentials, 
             "https://github.com/shigedangao/mask-kube.git",
@@ -249,7 +260,7 @@ mod tests {
     #[test]
     fn expect_to_clone_repo_by_ssh() {
         let env = load_local_env().unwrap();
-        let credentials = Credentials::Ssh(env.ssh.unwrap());
+        let credentials = Credentials::Ssh(env.ssh);
         let handle = GitConfig::new(
             credentials,
             "git@github.com:shigedangao/wurkflow.git",
