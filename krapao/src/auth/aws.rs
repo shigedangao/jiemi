@@ -7,6 +7,7 @@ use crate::helper;
 const AWS_CONFIG_FOLDER: &str = ".aws";
 const AWS_CREDENTIALS_PATH: &str = "credentials";
 const AWS_REGION_PATH: &str = "config";
+const AWS_OUTPUT: &str = "json";
 
 #[derive(Serialize, Default)]
 struct AwsConfig {
@@ -28,61 +29,68 @@ struct AwsRegion {
     output: String
 }
 
-/// Write credentials file (~/.aws/credentials)
-/// 
-/// * `access_key` - String
-/// * `secret_key` - String
-fn write_aws_credentials_file(access_key: String, secret_key: String) -> Result<(), Error> {
-    let mut aws_path = dirs::home_dir()
-        .ok_or_else(|| Error::Io("Home dir could not be founded".to_owned()))?;
-    aws_path.push(AWS_CONFIG_FOLDER);
+impl AwsConfig {
+    /// Create a new AwsConfig based on the input parameter
+    /// 
+    /// # Arguments
+    /// * `creds` - Option<(String, String)>
+    /// * `conf` - Option<String>
+    fn new(creds: Option<(String, String)>, conf: Option<String>) -> AwsConfig {
+        let mut config = AwsConfig::default();
+        if let Some((key, access_key)) = creds {
+            config.credentials = Some(AwsCredentials {
+                aws_access_key_id: key,
+                aws_secret_access_key: access_key
+            });
+        }
 
-    // create the path if it does not exist
-    helper::create_path(&aws_path)?;
+        if let Some(region) = conf {
+            config.config = Some(AwsRegion {
+                region,
+                output: AWS_OUTPUT.to_owned()
+            });
+        }
 
-    let mut credentials_path = aws_path.clone();
-    credentials_path.push(AWS_CREDENTIALS_PATH);
+        config
+    }
 
-    let profile = AwsCredentials {
-        aws_access_key_id: access_key,
-        aws_secret_access_key: secret_key
-    };
+    /// Create a set of aws credentials which is gonna be stored in ~/.aws/credentials
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    fn create_credentials(&self) -> Result<(), Error> {
+        let mut aws_path = dirs::home_dir().unwrap_or_default();
+        aws_path.push(AWS_CONFIG_FOLDER);
+        // create the path if it does not exist
+        helper::create_path(&aws_path)?;
 
-    let toml = toml::to_string(&AwsConfig {
-        credentials: Some(profile),
-        ..Default::default()
-    })?;
-    let cleaned_toml = clean_generated_toml_string(&toml);
+        let mut credentials_path = aws_path.clone();
+        credentials_path.push(AWS_CREDENTIALS_PATH);
+        
+        let toml = toml::to_string(self)?;
+        let toml = toml.replace('"', "");
 
-    fs::write(credentials_path, cleaned_toml)?;
+        fs::write(credentials_path, toml)?;
 
-    Ok(())
-}
+        Ok(())
+    }
 
-/// Write Aws Config
-/// 
-/// # Arguments
-/// * `region` - String
-fn write_aws_config(region: String) -> Result<(), Error> {
-    let mut aws_path = dirs::home_dir()
-        .ok_or_else(|| Error::Io("Home dir could not be founded".to_owned()))?;
-    aws_path.push(AWS_CONFIG_FOLDER);
-    aws_path.push(AWS_REGION_PATH);
+    /// Create a set of config file which is gonna be stored in ~/.aws/config
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    fn create_config(&self) -> Result<(), Error> {
+        let mut aws_path = dirs::home_dir().unwrap_or_default();
+        aws_path.push(AWS_CONFIG_FOLDER);
+        aws_path.push(AWS_REGION_PATH);
+        
+        let toml = toml::to_string(self)?;
+        let toml = toml.replace('"', "");
 
-    let reg = AwsRegion {
-        region,
-        output: "json".to_owned()
-    };
+        fs::write(aws_path, toml)?;
 
-    let toml = toml::to_string(&AwsConfig {
-        config: Some(reg),
-        ..Default::default()
-    })?;
-    let cleaned_toml = clean_generated_toml_string(&toml);
-
-    fs::write(aws_path, &cleaned_toml)?;
-
-    Ok(())
+        Ok(())
+    }
 }
 
 /// Authenticate
@@ -92,16 +100,36 @@ fn write_aws_config(region: String) -> Result<(), Error> {
 /// * `secret_key` - String
 /// * `region` - String
 pub fn authenticate(access_key: &str, secret_key: &str, region: &str) -> Result<(), Error> {
-    write_aws_credentials_file(access_key.to_owned(), secret_key.to_owned())?;
-    write_aws_config(region.to_owned())?;
+    if access_key.is_empty() || secret_key.is_empty() || region.is_empty() {
+        return Err(Error::Sops("AWS configuration missing either the key_id, access_key or the region".to_owned()));
+    }
+
+    // Create credentials
+    AwsConfig::new(
+        Some((access_key.to_owned(), secret_key.to_owned())), 
+        None
+    ).create_credentials()?;
+    
+    // Create config
+    AwsConfig::new(None, Some(region.to_owned()))
+        .create_config()?;
 
     Ok(())
 }
 
-/// AWS config does not like string quote. Thus we're removing the quote from the generated toml file
-/// 
-/// # Arguments
-/// * `value` - &str
-fn clean_generated_toml_string(value: &str) -> String {
-    value.replace('"', "")
+#[cfg(test)]
+mod tests {
+    use super::authenticate;
+
+    #[test]
+    fn expect_to_authenticate_with_aws() {
+        let res = authenticate("foo", "bar", "eu-west-3");
+        assert!(res.is_ok());
+    }
+
+    #[test]
+    fn expect_to_return_err() {
+        let res = authenticate("", "", "");
+        assert!(res.is_err());
+    }
 }
