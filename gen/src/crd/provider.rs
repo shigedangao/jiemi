@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use super::secret::GenericConfig;
 use crate::err::Error;
 
+#[derive(Debug, PartialEq)]
 pub enum ProviderList {
     Gcp(String),
     Aws(String, String, String),
@@ -14,20 +15,20 @@ pub enum ProviderList {
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
 pub struct GcpCredentials {
-    service_account: GenericConfig
+    pub service_account: GenericConfig
 }
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
 pub struct AwsCredentials {
-    key_id: GenericConfig,
-    access_key: GenericConfig,
-    region: GenericConfig
+    pub key_id: GenericConfig,
+    pub access_key: GenericConfig,
+    pub region: GenericConfig
 }
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
 pub struct PgpCredentials {
     #[serde(rename = "privateKey")]
-    private_key: GenericConfig
+    pub private_key: GenericConfig
 }
 
 #[async_trait]

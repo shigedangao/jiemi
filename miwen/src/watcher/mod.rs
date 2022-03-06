@@ -52,7 +52,7 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
                 SyncStatus::Error, 
                 Some(err.to_string()), 
                 None, 
-                object
+                &object
             ).update_status(&name, &ns).await?;
 
             return Ok(())
@@ -66,7 +66,7 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
             SyncStatus::Unsync, 
             Some(err.to_string()), 
             Some(hash), 
-            object
+            &object
         ).update_status(&name, &ns).await?;
 
         return Ok(())
@@ -77,7 +77,7 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
         SyncStatus::Sync, 
         None, 
         Some(hash), 
-        object
+        &object
     )
         .update_status(&name, &ns).await?;
 

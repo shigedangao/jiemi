@@ -73,7 +73,7 @@ async fn get_and_apply_template(crd: Decryptor) -> Result<(), Error> {
                     SyncStatus::Sync, 
                     None, 
                     Some(hash), 
-                    crd
+                    &crd
                 ).update_status(&name, &ns).await?;
             },
             Err(err) => {
@@ -81,7 +81,7 @@ async fn get_and_apply_template(crd: Decryptor) -> Result<(), Error> {
                     SyncStatus::Error,  
                     Some(err.to_string()),  
                     Some(hash),  
-                    crd
+                    &crd
                 ).update_status(&name, &ns).await?;
             }
         };

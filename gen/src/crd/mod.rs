@@ -62,18 +62,18 @@ impl Provider {
     pub async fn get_credentials(&self, ns: &str) -> Result<provider::ProviderList, Error> {
         let client = Client::try_default().await?;
         if let Some(gcp) = self.gcp.clone() {
-            let provider = gcp.convert(client, ns).await?;
-            return Ok(provider);
+            let list = gcp.convert(client, ns).await?;
+            return Ok(list);
         }
 
         if let Some(aws) = self.aws.clone() {
-            let provider = aws.convert(client, ns).await?;
-            return Ok(provider);
+            let list = aws.convert(client, ns).await?;
+            return Ok(list);
         }
 
         if let Some(pgp) = self.pgp.clone() {
-            let provider = pgp.convert(client, ns).await?;
-            return Ok(provider);
+            let list = pgp.convert(client, ns).await?;
+            return Ok(list);
         }
 
         Ok(provider::ProviderList::None)
@@ -96,5 +96,113 @@ impl Decryptor {
             .unwrap_or_else(|| DEFAULT_NAMESPACE.to_owned());
 
         Ok((name, generation_id, ns))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use provider::{
+        GcpCredentials,
+        PgpCredentials,
+        AwsCredentials,
+        ProviderList
+    };
+    use secret::GenericConfig;
+
+    #[tokio::test]
+    async fn expect_to_get_gcp_credentials() {
+        let provider = Provider {
+            gcp: Some(GcpCredentials {
+                service_account: GenericConfig {
+                    literal: Some("google-credentials".to_owned()),
+                    ..Default::default()
+                }
+            }),
+            aws: None,
+            pgp: None
+        };
+
+        let list = provider.get_credentials("default").await;
+        assert!(list.is_ok());
+
+        let list = list.unwrap();
+        match list {
+            ProviderList::Gcp(v) => assert_eq!(v, "google-credentials"),
+            _ => panic!("Expect to return GCP credentials")
+        }
+    }
+
+    #[tokio::test]
+    async fn expect_to_get_pgp_credentials() {
+        let provider = Provider {
+            gcp: None,
+            aws: None,
+            pgp: Some(PgpCredentials {
+                private_key: GenericConfig {
+                    literal: Some("pgp-credentials".to_owned()),
+                    ..Default::default()
+                }
+            })
+        };
+
+        let list = provider.get_credentials("default").await;
+        assert!(list.is_ok());
+
+        let list = list.unwrap();
+        match list {
+            ProviderList::Pgp(v) => assert_eq!(v, "pgp-credentials"),
+            _ => panic!("Expect to return PGP credentials")
+        }
+    }
+
+    #[tokio::test]
+    async fn expect_to_get_aws_credentials() {
+        let provider = Provider {
+            gcp: None,
+            aws: Some(AwsCredentials {
+                key_id: GenericConfig {
+                    literal: Some("key-id-credentials".to_owned()),
+                    ..Default::default()
+                },
+                access_key: GenericConfig {
+                    literal: Some("access-key-credentials".to_owned()),
+                    ..Default::default()
+                },
+                region: GenericConfig {
+                    literal: Some("region-credentials".to_owned()),
+                    ..Default::default()
+                }
+            }),
+            pgp: None
+        };
+
+        let list = provider.get_credentials("default").await;
+        assert!(list.is_ok());
+
+        let list = list.unwrap();
+        match list {
+            ProviderList::Aws(i, k, r) => {
+                assert_eq!(i, "key-id-credentials");
+                assert_eq!(k, "access-key-credentials");
+                assert_eq!(r, "region-credentials");
+            },
+            _ => panic!("Expect to return AWS credentials")
+        }
+    }
+
+    #[tokio::test]
+    async fn expect_to_get_no_provider() {
+        let provider = Provider {
+            gcp: None,
+            aws: None,
+            pgp: None
+        };
+
+        let list = provider.get_credentials("default").await;
+        assert!(list.is_ok());
+
+        let list = list.unwrap();
+        assert_eq!(list, ProviderList::None);
     }
 }
