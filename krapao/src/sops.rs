@@ -49,7 +49,6 @@ mod tests {
         let config = GitConfig::default();
         let res = decrypt_file(&config, encrypted_file_path, sops_file_path);
 
-        println!("{res:?}");
         assert!(res.is_ok());
     }
 }

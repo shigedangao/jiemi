@@ -12,6 +12,7 @@ use provider::AsyncTryFrom;
 pub mod status;
 pub mod repo;
 pub mod provider;
+pub mod secret;
 
 // Constant
 const DEFAULT_NAMESPACE: &str = "default";

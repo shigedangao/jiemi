@@ -1,9 +1,12 @@
-use k8s_openapi::api::core::v1::Secret;
-use kube::{Client, Api};
+use kube::Client;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use crate::err::Error;
-use crate::util;
+use super::secret::GenericConfig;
+
+// Constant
+const TOKEN_MSG_ERR: &str = "Unable to retrieve username / token for secret";
+const SSH_MSG_ERR: &str = "SSH could not be founded";
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize)]
 pub struct Repository {
@@ -44,7 +47,7 @@ impl RepositoryCredentials {
             return Ok((username, token));
         }
 
-        Err(Error::Kube("Unable to retrieve username / token for secret".to_owned()))
+        Err(Error::Kube(TOKEN_MSG_ERR.to_owned()))
     }
 
     /// Get the SSH value from the CRD
@@ -52,54 +55,78 @@ impl RepositoryCredentials {
     /// # Arguments
     /// * `&self` - Self
     /// * `client` - &Client
-    /// * `ns` - &str 
+    /// * `ns` - &str
     pub async fn get_ssh(&self, client: &Client, ns: &str) -> Result<String, Error> {
         if let Some(conf) = self.ssh.as_ref() {
             let res = conf.get_value(client, ns).await?;
             return Ok(res);
         }
 
-        Err(Error::Kube("SSH could not be founded".to_owned()))
+        Err(Error::Kube(SSH_MSG_ERR.to_owned()))
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
-pub struct GenericConfig {
-    #[serde(rename = "secretName")]
-    secret_name: Option<String>,
-    key: Option<String>,
-    literal: Option<String>
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-impl GenericConfig {
-    /// Get the value from a secret or a literal value
-    /// If a secret is specified. Then we're going to load the secret and get the value from the key
-    /// If the valus is a literal then return it straight away
-    /// 
-    /// # Arguments
-    /// * `&self` - Self
-    /// * `client` - &Client
-    /// * `ns` - &str
-    pub async fn get_value(&self, client: &Client, ns: &str) -> Result<String, Error> {
-        if let Some(literal) = self.literal.to_owned() {
-            return Ok(literal);
+    fn get_credentials() -> RepositoryCredentials {
+        RepositoryCredentials {
+            username: Some(GenericConfig {
+                literal: Some("username".to_owned()),
+                ..Default::default()
+            }),
+            token: Some(GenericConfig {
+                literal: Some("token".to_owned()),
+                ..Default::default()
+            }),
+            ssh: Some(GenericConfig {
+                literal: Some("ssh".to_owned()),
+                ..Default::default()
+            })
         }
+    }
 
-        let creds = self.secret_name.as_ref().zip(self.key.as_ref());
-        if let Some((secret_name, key)) = creds {
-            let api: Api<Secret> = Api::namespaced(client.clone(), ns);
-            let secret = api.get(secret_name).await?;
+    #[tokio::test]
+    async fn expect_to_get_token_creds() {
+        let credentials = get_credentials();
+        let client = Client::try_default().await.unwrap();
 
-            if let Some(data) = secret.data {
-                if let Some(value) = data.get(key) {
-                    let res = util::decode_byte(value)?;
-                    return Ok(res);
-                }
-            }
+        let (username, token) = credentials.get_token_creds(&client, "default").await.unwrap();
 
-            return Err(Error::Kube("Unable to decrypt the secret {&secret_name} with key {&key}".to_owned()));
-        }
+        assert_eq!(username, "username");
+        assert_eq!(token, "token");
+    }
 
-        Err(Error::Kube("Secret has not been specified".to_owned()))
+    #[tokio::test]
+    async fn expect_to_get_ssh_creds() {
+        let credentials = get_credentials();
+        let client = Client::try_default().await.unwrap();
+
+        let ssh = credentials.get_ssh(&client, "default").await.unwrap();
+
+        assert_eq!(ssh, "ssh");
+    }
+
+    #[tokio::test]
+    async fn expect_to_not_retrieve_token() {
+        let mut credentials = get_credentials();
+        credentials.token.take();
+
+        let client = Client::try_default().await.unwrap();
+        let res = credentials.get_token_creds(&client, "default").await;
+
+        assert!(res.is_err())
+    }
+
+    #[tokio::test]
+    async fn expect_to_not_get_ssh() {
+        let mut credentials = get_credentials();
+        credentials.ssh.take();
+
+        let client = Client::try_default().await.unwrap();
+        let ssh = credentials.get_ssh(&client, "default").await;
+
+        assert!(ssh.is_err());
     }
 }

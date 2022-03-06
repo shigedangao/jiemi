@@ -2,7 +2,7 @@ use kube::Client;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use async_trait::async_trait;
-use super::repo::GenericConfig;
+use super::secret::GenericConfig;
 use crate::err::Error;
 
 pub enum ProviderList {
