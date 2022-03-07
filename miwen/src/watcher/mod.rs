@@ -37,7 +37,7 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
 
     // In order to not create an infinite loop of update...
     // we're checking the generation_id
-    let generation_exist = state::upsert_state(state, name.clone(), generation_id)?;
+    let generation_exist = state::upsert_state(state, &name, generation_id)?;
     if generation_exist {
         info!("no need to update the status for decryptor {name}");
         return Ok(())
