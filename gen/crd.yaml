@@ -170,6 +170,7 @@ spec:
                 - source
               type: object
             status:
+              description: "Status field of the CRD. It represent the Sync status of the CRD. See below to see how it looks\n\n# Example Status: Current: deployed_at:      2022-03-03T20:37:59.024362965+00:00 error_message:    <nil> file_to_decrypt:  pgp/secret.enc.yaml Id:               1 Revision:         a888f02e1111beb2c543d729faa5d516ecaa9e12 Status:  Sync History: List of previous statuses..."
               nullable: true
               properties:
                 current:

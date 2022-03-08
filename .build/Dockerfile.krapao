@@ -53,6 +53,7 @@ RUN go install go.mozilla.org/sops/v3/cmd/sops@latest
 
 # Final build uses to hold the binary only
 FROM rust:1.59-bullseye
+ARG TARGETARCH
 
 # Install google cloud cli
 RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-375.0.0-linux-x86_64.tar.gz
@@ -61,7 +62,10 @@ RUN ./google-cloud-sdk/install.sh
 RUN rm google-cloud-sdk-375.0.0-linux-x86_64.tar.gz
 
 # Install aws cli
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+ENV ARM_AWS_CLI="https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+ENV X86_AWS_CLI="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+
+RUN if [[ "$TARGETARCH" = "aarch64" ]]; then curl $ARM_AWS_CLI -o "awscliv2.zip"; else curl $X86_AWS_CLI -o "awscliv2.zip"; fi
 RUN unzip awscliv2.zip
 RUN ./aws/install
 RUN rm awscliv2.zip
