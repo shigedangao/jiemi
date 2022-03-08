@@ -39,12 +39,18 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
+    use crate::auth::pgp;
 
     #[test]
     fn expect_to_decrypt_sops_file() {
         let encrypted_file_path = "../example/sops/encrypted.yaml";
         let sops_file_path = "../example/sops/.sops.yaml";
+
+        let read = fs::read("../key/test_private_key.rsa").unwrap();
+        let key = String::from_utf8(read).unwrap();
+        pgp::authenticate_with_pgp(&key).unwrap();
 
         let config = GitConfig::default();
         let res = decrypt_file(&config, encrypted_file_path, sops_file_path);
