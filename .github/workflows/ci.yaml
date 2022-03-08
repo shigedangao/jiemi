@@ -14,6 +14,7 @@ jobs:
       - name: apply test files for test
         run: |
           kubectl apply -f gen/crd.yaml
+          kubectl apply -f example/test/secret.yaml
           kubectl apply -f example/test/decryptor.yaml
       - name: install clippy
         run: rustup component add clippy
