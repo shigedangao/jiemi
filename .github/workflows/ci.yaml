@@ -8,9 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install sops
-        run: |
-          curl -O https://github.com/mozilla/sops/releases/download/v3.7.1/sops_3.7.1_amd64.deb
-          sudo dpkg -i sops_3.7.1_amd64.deb
+        run: go get -u go.mozilla.org/sops/cmd/sops
       - name: prepare env file
         working-directory: krapao
         run: |
