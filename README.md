@@ -10,7 +10,7 @@ Jiemi is a Kubernetes controller which decrypt and apply Kubernetes object that 
 
 Need to install openssl@1.1 (osx)
 
-## TODO for Krapao
+## Krapao
 
 - [x] Clone repository w/o ssh
 - [x] Clone repository with token only
@@ -22,9 +22,9 @@ Need to install openssl@1.1 (osx)
 - [x] Authenticate with GCP provider
 - [x] Authenticate with AWS provider 
 - [x] Support pgp key - note: pgp key w/o pwd
-- [ ] Add unit test
+- [x] Add unit test
 
-## TODO for miwen
+## Miwen
 
 - [x] Create a CRD (gen)
 - [x] Listen to Kubernetes events
@@ -33,7 +33,7 @@ Need to install openssl@1.1 (osx)
 - [x] Synchronize on CRD changes (by checking the generation_id which is different from the stored one)
 - [x] Synchronize changes from git repository by calling the rpc endpoint from time to time
 - [x] Add a limit to the number of synchronization status in the CRD
-- [ ] Add more unit test
+- [x] Add more unit test
 - [x] Delete an item of the state when a CRD is removed
 
 ## Note on PGP

@@ -2,6 +2,9 @@ use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use crate::err::Error;
 
+// Constant
+const LOCK_ERR_MSG: &str = "Unable to acquired lock";
+
 pub type State = Arc<Mutex<HashMap<String, i64>>>;
 
 /// Generate a new State
@@ -18,12 +21,12 @@ pub fn generate_new_state() -> State {
 /// 
 /// # Arguments
 /// * `state` - State
-/// * `key` - String
+/// * `key` - &str
 /// * `value` - i64
 pub fn upsert_state(state: State, key: &str, value: i64) -> Result<bool, Error> {
     let mut state = state
         .lock()
-        .map_err(|_| Error::Watch("Unable to acquired lock".to_owned()))?;
+        .map_err(|_| Error::Watch(LOCK_ERR_MSG.to_owned()))?;
     
     if let Some(inner) = state.get(key) {
         if inner == &value {
@@ -46,7 +49,7 @@ pub fn upsert_state(state: State, key: &str, value: i64) -> Result<bool, Error> 
 /// * `key` - &str
 pub fn is_registered(state: State, key: &str) -> Result<bool, Error> {
     let state = state.lock()
-        .map_err(|_| Error::Watch("Unable to acquired the lock".to_owned()))?;
+        .map_err(|_| Error::Watch(LOCK_ERR_MSG.to_owned()))?;
 
     if state.contains_key(key) {
         return Ok(true);
@@ -63,7 +66,7 @@ pub fn is_registered(state: State, key: &str) -> Result<bool, Error> {
 /// * `key` - &str
 pub fn delete_item_in_state(state: State, key: &str) -> Result<(), Error> {
     let mut state = state.lock()
-        .map_err(|_| Error::Watch("Unable to acquired the lock".to_owned()))?;
+        .map_err(|_| Error::Watch(LOCK_ERR_MSG.to_owned()))?;
 
     state.remove(key);
 

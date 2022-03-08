@@ -109,3 +109,16 @@ async fn list_crd(client: Client) -> Result<Vec<Decryptor>, Error> {
 
     Ok(list)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[tokio::test]
+    async fn expect_list_crd_to_not_fail() {
+        let client = Client::try_default().await.unwrap();
+        let res = list_crd(client).await;
+
+        assert!(res.is_ok());
+    }
+}

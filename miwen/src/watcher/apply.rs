@@ -122,3 +122,93 @@ pub async fn apply_rendered_object(tmpl: String, client: &Client, ns: &str) -> R
         Err(_) => create_resource(api, patch).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use k8s_openapi::api::core::v1::ConfigMap;
+    
+    #[test]
+    fn expect_to_get_gvk_with_group() {
+        let wrapper = GvkWrapper {
+            api_version: "jiemi.cr/v1alpha1".to_owned(),
+            kind: "Decryptor".to_owned(),
+            metadata: ObjectMeta::default()
+        };
+
+        let gvk = wrapper.get_gkv();
+        
+        assert_eq!(gvk.group, "jiemi.cr");
+        assert_eq!(gvk.version, "v1alpha1");
+        assert_eq!(gvk.kind, "Decryptor");
+    }
+
+    #[test]
+    fn expect_to_get_gvk_wo_group() {
+        let wrapper = GvkWrapper {
+            api_version: "v1".to_owned(),
+            kind: "Secret".to_owned(),
+            metadata: ObjectMeta::default()
+        };
+
+        let gvk = wrapper.get_gkv();
+        
+        assert_eq!(gvk.group, "");
+        assert_eq!(gvk.version, "v1");
+        assert_eq!(gvk.kind, "Secret");
+    }
+
+    #[test]
+    fn expect_to_get_name() {
+        let mut meta = ObjectMeta::default();
+        meta.name = Some("foo".to_owned());
+
+        let wrapper = GvkWrapper {
+            api_version: "v1".to_owned(),
+            kind: "Secret".to_owned(),
+            metadata: meta
+        };
+
+        let name = wrapper.get_name().unwrap();
+        assert_eq!(name, "foo");
+    }
+
+    #[tokio::test]
+    async fn expect_to_apply_rendered_object() {
+        let configmap = r#"
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: miwen-unit-test
+        data:
+          player_initial_lives: "3"
+          ui_properties_file_name: "user-interface.properties"
+        "#;
+
+        let client = Client::try_default().await.unwrap();
+
+        // creation
+        let res = apply_rendered_object(configmap.to_owned(), &client, "default").await;
+        assert!(res.is_ok());
+
+        let updated_configmap = r#"
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: miwen-unit-test
+        data:
+          player_initial_lives: "5"
+          ui_properties_file_name: "user-interface.properties"
+        "#;
+        
+        let res = apply_rendered_object(updated_configmap.to_owned(), &client, "default").await;
+        assert!(res.is_ok());
+
+        // Checking that the value is really 5
+        let configmap: Api<ConfigMap> = Api::namespaced(client, "default");
+        let miwen_unit_test_map = configmap.get("miwen-unit-test").await.unwrap();
+
+        let data = miwen_unit_test_map.data.unwrap();
+        assert_eq!(data.get("player_initial_lives").unwrap(), "5");
+    }
+}
