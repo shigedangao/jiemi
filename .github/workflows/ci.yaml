@@ -14,8 +14,10 @@ jobs:
           echo GIT_USERNAME='"${{ secrets.GIT_USERNAME }}"' >> Env.toml
           echo GIT_TOKEN='"${{ secrets.GIT_TOKEN }}"' >> Env.toml
           echo GIT_SSH_KEY='"""\n${{ secrets.GIT_SSH_KEY }}\n"""' >> Env.toml
-      - name: setup k3s
-        run: curl -sfL https://get.k3s.io | sh -
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          version: v1.22
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: apply test files for test
         run: |
           kubectl apply -f gen/crd.yaml
