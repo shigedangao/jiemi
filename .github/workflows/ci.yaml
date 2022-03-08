@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install sops
-        run: go get -u go.mozilla.org/sops/cmd/sops
+        run: go install go.mozilla.org/sops/v3/cmd/sops@latest
       - name: prepare env file
         working-directory: krapao
         run: |
