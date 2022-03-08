@@ -12,7 +12,9 @@ const FILENAME: &str = "../credentials.json";
 /// * `credentials` - &str
 pub fn set_authentication_file_for_gcp(credentials: &str) -> Result<(), Error> {
     // writing the configuration file
-    fs::write("../credentials.json", credentials)?;
+    fs::write("../credentials.json", credentials)
+        .map_err(|err| Error::ProviderAuth(err.to_string()))?;
+        
     env::set_var(ENV_NAME, FILENAME);
 
     Ok(())

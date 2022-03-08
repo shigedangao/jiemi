@@ -16,7 +16,8 @@ pub enum Error {
     Sync(String),
     Sops(String),
     Encoding(String),
-    Io(String)
+    Io(String),
+    ProviderAuth(String)
 }
 
 impl std::fmt::Display for Error {
@@ -35,7 +36,8 @@ impl std::fmt::Display for Error {
             Error::Sync(msg) => write!(f, "Issue while syncing repositories {msg}"),
             Error::Sops(msg) => write!(f, "Error with SOPS: {msg}"),
             Error::Encoding(msg) => write!(f, "Error while encoding data: {msg}"),
-            Error::Io(msg) => write!(f, "Error while processing doing I/O: {msg}")
+            Error::Io(msg) => write!(f, "Error while processing doing I/O: {msg}"),
+            Error::ProviderAuth(msg) => write!(f, "Error while authenticating with provider to decrypt SOPS file: {msg}")
         }
     }
 }

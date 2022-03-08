@@ -217,4 +217,20 @@ mod tests {
         let history = new_status.history.unwrap();
         assert_eq!(history.len(), 1);
     }
+
+    #[tokio::test]
+    async fn expect_to_update_decryptor_status_on_cluster() {
+        let client = Client::try_default().await.unwrap();
+        let api: Api<Decryptor> = Api::namespaced(client, "default");
+
+        let decryptor = api.get("miwen-pgp-test-decryptor").await.unwrap();
+        let status = DecryptorStatus::new(
+            SyncStatus::Unsync, 
+            None, 
+            Some("foo".to_owned()),
+            &decryptor
+        ).update_status("miwen-pgp-test-decryptor", "default").await;
+
+        assert!(status.is_ok());
+    }
 }

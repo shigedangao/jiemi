@@ -1,0 +1,15 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: miwen-pgp-test-decryptor
+spec:
+  provider:
+    pgp:
+      privateKey:
+        secretName: pgp-secret
+        key: private.rsa
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: pgp/secret.enc.yaml
+    sopsPath: pgp/.sops.yaml

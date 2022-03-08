@@ -21,7 +21,7 @@ pub fn authenticate_with_pgp(key: &str) -> Result<(), Error> {
         .status()?;
 
     if !status.success() {
-        return Err(Error::Sops(GPG_AUTH_ERR.to_owned()));
+        return Err(Error::ProviderAuth(GPG_AUTH_ERR.to_owned()));
     }
 
     info!("🔑 PGP key registered");

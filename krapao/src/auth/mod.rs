@@ -5,6 +5,9 @@ pub mod gcp;
 pub mod aws;
 pub mod pgp;
 
+// Constant
+const MISSING_PROVIDER_ERR: &str = "Missing provider";
+
 pub enum Provider {
     Gcp(String),
     Aws(String, String, String),
@@ -46,7 +49,7 @@ impl Provider {
             Provider::Gcp(credentials) => gcp::set_authentication_file_for_gcp(credentials),
             Provider::Aws(id, key, region) => aws::authenticate(id, key, region),
             Provider::Pgp(key) => pgp::authenticate_with_pgp(key),
-            Provider::None => Ok(())
+            Provider::None => Err(Error::ProviderAuth(MISSING_PROVIDER_ERR.to_owned()))
         }
     }
 }

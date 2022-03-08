@@ -62,12 +62,15 @@ impl AwsConfig {
         let mut aws_path = dirs::home_dir().unwrap_or_default();
         aws_path.push(AWS_CONFIG_FOLDER);
         // create the path if it does not exist
-        helper::create_path(&aws_path)?;
+        helper::create_path(&aws_path)
+            .map_err(|err| Error::ProviderAuth(err.to_string()))?;
 
         let mut credentials_path = aws_path.clone();
         credentials_path.push(AWS_CREDENTIALS_PATH);
         
-        let toml = toml::to_string(self)?;
+        let toml = toml::to_string(self)
+            .map_err(|err| Error::ProviderAuth(err.to_string()))?;
+
         let toml = toml.replace('"', "");
 
         fs::write(credentials_path, toml)?;
@@ -84,7 +87,9 @@ impl AwsConfig {
         aws_path.push(AWS_CONFIG_FOLDER);
         aws_path.push(AWS_REGION_PATH);
         
-        let toml = toml::to_string(self)?;
+        let toml = toml::to_string(self)
+            .map_err(|err| Error::ProviderAuth(err.to_string()))?;
+            
         let toml = toml.replace('"', "");
 
         fs::write(aws_path, toml)?;
