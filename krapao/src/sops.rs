@@ -44,6 +44,7 @@ mod tests {
     use crate::auth::pgp;
 
     #[test]
+    #[ignore]
     fn expect_to_decrypt_sops_file() {
         let encrypted_file_path = "../example/sops/encrypted.yaml";
         let sops_file_path = "../example/sops/.sops.yaml";
