@@ -1,0 +1,31 @@
+name: tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: debianmaster/actions-k3s@master
+        id: k3s
+        with:
+          version: 'latest'
+      - name: apply test files for test
+        run: |
+          kubectl apply -f gen/crd.yaml
+          kubectl apply -f example/test/decryptor.yaml
+      - name: install clippy
+        run: rustup component add clippy
+      - name: run test on gen crate
+        working-directory: gen
+        run: cargo build && cargo test
+      - name: run test on krapao
+        working-directory: krapao
+        run: cargo build && cargo test
+      - name: run test on miwen
+        working-directory: miwen
+        run: cargo build && cargo test
+      - name: run clippy 
+        run: cargo clippy
+        
