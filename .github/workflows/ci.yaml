@@ -4,9 +4,13 @@ on: [push]
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: install sops
+        run: |
+          curl -O https://github.com/mozilla/sops/releases/download/v3.7.1/sops_3.7.1_amd64.deb
+          sudo dpkg -i sops_3.7.1_amd64.deb
       - name: prepare env file
         working-directory: krapao
         run: |
