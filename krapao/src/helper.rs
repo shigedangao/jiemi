@@ -1,4 +1,5 @@
 use std::{fs, env};
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::io::ErrorKind;
 use super::err::Error;
@@ -13,6 +14,10 @@ const SSH_GIT_ENV: &str = "GIT_SSH_COMMAND";
 /// * `key` - &str
 pub fn set_ssh_key(key: &str) -> Result<(), Error> {
     fs::write(SSH_KEYPATH, key)?;
+
+    let mut perm = fs::metadata(SSH_KEYPATH)?.permissions();
+    perm.set_mode(0o600);
+    fs::set_permissions(SSH_KEYPATH, perm)?;
 
     Ok(())
 }

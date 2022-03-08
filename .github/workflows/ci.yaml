@@ -30,7 +30,7 @@ jobs:
         run: cargo build && cargo test
       - name: run test on krapao
         working-directory: krapao
-        run: cargo build && cargo test
+        run: cargo build && cargo test -- --test-threads=1
       - name: run test on miwen
         working-directory: miwen
         run: cargo build && cargo test

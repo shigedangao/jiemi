@@ -37,7 +37,6 @@ mod tests {
     fn expect_to_not_register_private_key() {
         let dummy_private_key = "foo-bar";
         let res = authenticate_with_pgp(dummy_private_key);
-        
         assert!(res.is_err());
     }
 
