@@ -2,13 +2,7 @@ use std::collections::VecDeque;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
-use kube::{
-    Client,
-    Api,
-    api::PostParams
-};
 use super::Decryptor;
-use crate::err::Error;
 
 // constant
 const MAX_QUEUE_SIZE: usize = 10;
@@ -98,27 +92,6 @@ impl DecryptorStatus {
             queue.push_back(self.current.clone());
         }
     }
-
-    /// Update the status of an existing Decryptor crd
-    /// 
-    /// # Arguments
-    /// * `self` - Self
-    /// * `name` - &str
-    /// * `ns` - &str
-    pub async fn update_status(self, name: &str, ns: &str) -> Result<(), Error> {
-        let client = Client::try_default().await?;
-        let api = Api::<Decryptor>::namespaced(client.clone(), ns);
-        let mut curr_decryptor_status = api.get_status(name).await?;
-        curr_decryptor_status.status = Some(self);
-
-        api.replace_status(
-            name,
-            &PostParams::default(),
-            serde_json::to_vec(&curr_decryptor_status)?
-        ).await?;
-
-        Ok(())
-    }
 }
 
 impl Status {
@@ -151,6 +124,7 @@ impl Status {
 #[cfg(test)]
 mod tests {
     use kube::core::ObjectMeta;
+    use kube::{Client, Api};
     use crate::crd::{DecryptorSpec, Provider, Source};
     use crate::crd::repo::Repository;
     use super::*;
@@ -223,14 +197,16 @@ mod tests {
         let client = Client::try_default().await.unwrap();
         let api: Api<Decryptor> = Api::namespaced(client, "default");
 
-        let decryptor = api.get("miwen-pgp-test-decryptor").await.unwrap();
+        let mut decryptor = api.get("miwen-pgp-test-decryptor").await.unwrap();
         let status = DecryptorStatus::new(
             SyncStatus::Unsync, 
             None, 
             Some("foo".to_owned()),
             &decryptor
-        ).update_status("miwen-pgp-test-decryptor", "default").await;
-
+        );
+        
+        decryptor.set_status(status);
+        let status = decryptor.update_status().await;
         assert!(status.is_ok());
     }
 }
