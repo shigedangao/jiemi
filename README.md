@@ -6,36 +6,6 @@ Jiemi is a Kubernetes controller which decrypt and apply Kubernetes object that 
 - Miwen: Binary app uses as a kubernetes controller. It checks periodically the CRD and check whenever we need to update the decrypted files
 - Krapao: Binary app uses to handle repository operations, authenticate with cloud provider & decrypt sops files
 
-### Miwen
-
-Need to install openssl@1.1 (osx)
-
-## Krapao
-
-- [x] Clone repository w/o ssh
-- [x] Clone repository with token only
-- [x] Clone repository with ssh
-- [x] Synchronize repository with interval
-- [x] Decrypt targeted files by using SOPS
-- [x] Expose RPC endpoint to be used by the kubernetes controller
-- [x] Store existing repository in a state to when restarting krapao in order to not clone the repo again...
-- [x] Authenticate with GCP provider
-- [x] Authenticate with AWS provider 
-- [x] Support pgp key - note: pgp key w/o pwd
-- [x] Add unit test
-
-## Miwen
-
-- [x] Create a CRD (gen)
-- [x] Listen to Kubernetes events
-- [x] Parse CRD and read kubernetes secrets
-- [x] Update the status of the CRD when something need to be synchronize
-- [x] Synchronize on CRD changes (by checking the generation_id which is different from the stored one)
-- [x] Synchronize changes from git repository by calling the rpc endpoint from time to time
-- [x] Add a limit to the number of synchronization status in the CRD
-- [x] Add more unit test
-- [x] Delete an item of the state when a CRD is removed
-
 ## Note on PGP
 
 Extract key to import on SOPS
