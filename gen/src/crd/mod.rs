@@ -3,7 +3,9 @@ use serde::{Serialize, Deserialize};
 use kube::{
     CustomResource,
     CustomResourceExt,
-    Client
+    Client,
+    Api,
+    api::PostParams
 };
 use status::DecryptorStatus;
 use crate::err::Error;
@@ -96,6 +98,33 @@ impl Decryptor {
             .unwrap_or_else(|| DEFAULT_NAMESPACE.to_owned());
 
         Ok((name, generation_id, ns))
+    }
+
+    /// Set the status in the current Decryptor crd
+    /// 
+    /// # Arguments
+    /// * `&mut self` - &Self
+    /// * `status` - DecryptorStatus
+    pub fn set_status(&mut self, status: DecryptorStatus) {
+        self.status = Some(status);
+    }
+
+    /// Update the status of the Decrytpro
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    pub async fn update_status(&self) -> Result<(), Error> {
+        let (name, _, ns) = self.get_metadata_info()?;
+        let client = Client::try_default().await?;
+        let api = Api::<Decryptor>::namespaced(client.clone(), &ns);
+        
+        api.replace_status(
+            &name,
+            &PostParams::default(),
+            serde_json::to_vec(&self)?
+        ).await?;
+
+        Ok(())
     }
 }
 

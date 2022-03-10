@@ -48,18 +48,18 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
 /// Get and apply the rendered template from the rpc server
 /// 
 /// # Arguments
-/// * `crd` - Decryptor
-async fn get_and_apply_template(crd: Decryptor) -> Result<(), Error> {
+/// * `mut decryptor` - Decryptor
+async fn get_and_apply_template(mut decryptor: Decryptor) -> Result<(), Error> {
     let client = Client::try_default().await?;
-    let (name, _, ns) = crd.get_metadata_info()?;
+    let (_, _, ns) = decryptor.get_metadata_info()?;
     // get the existing hash...
-    let current_hash = match &crd.status {
+    let current_hash = match &decryptor.status {
         Some(st) => st.current.revision.clone(),
         None => String::new()
     };
 
     // get file and commit hash from the repo
-    let spec = crd.spec.clone();
+    let spec = decryptor.spec.clone();
     let filename = &spec.source.file_to_decrypt;
     let (tmpl, hash) = crd::get_decrypted_kubernetes_object(&spec, &ns).await?;
 
@@ -67,26 +67,32 @@ async fn get_and_apply_template(crd: Decryptor) -> Result<(), Error> {
         // Apply the decrypted file in the kubernetes cluster
         info!("Found changes in repository. Apply changes for file {filename}");
         let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
-        match apply_res {
+        return match apply_res {
             Ok(_) => {
-                DecryptorStatus::new(
+                decryptor.set_status(DecryptorStatus::new(
                     SyncStatus::Sync, 
                     None, 
                     Some(hash), 
-                    &crd
-                ).update_status(&name, &ns).await?;
+                    &decryptor
+                ));
+                decryptor
+                    .update_status()
+                    .await
+                    .map_err(Error::from)
             },
             Err(err) => {
-                DecryptorStatus::new(
+                decryptor.set_status(DecryptorStatus::new(
                     SyncStatus::Error,  
                     Some(err.to_string()),  
                     Some(hash),  
-                    &crd
-                ).update_status(&name, &ns).await?;
+                    &decryptor
+                ));
+                decryptor
+                    .update_status()
+                    .await
+                    .map_err(Error::from)
             }
-        };
-
-        return Ok(())
+        }
     }
 
     info!("No change detected for {filename}");

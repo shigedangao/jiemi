@@ -21,18 +21,18 @@ pub mod apply;
 /// Parse the decryptor struct which we're going to use to add the Status structure
 /// 
 /// # Arguments
-/// * `object` - Decryptor
+/// * `mut decryptor` - Decryptor
 /// * `client` - Client
 /// * `state` - State 
-async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
-    let (name, generation_id, ns) = object.get_metadata_info()?;
+async fn parse_update_of_crd(mut decryptor: Decryptor, client: Client, state: state::State) -> Result<(), Error> {
+    let (name, generation_id, ns) = decryptor.get_metadata_info()?;
     info!("ℹ️ Change has been detected on {name}");
 
     // If the resource is not registered in the state, then this mean that the repository
     // might not be pulled. In that case we call the rpc server to pull the repository
     if !state::is_registered(state.clone(), &name)? {
         // proceed to call the grpc api to pull the repo
-        server::dispatch_clone_repository(&object.spec, &client, &ns).await?;
+        server::dispatch_clone_repository(&decryptor.spec, &client, &ns).await?;
     }
 
     // In order to not create an infinite loop of update...
@@ -44,16 +44,17 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
     }
 
     // Call the rpc server to get the decrypted k8s file to apply
-    let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&object.spec, &ns).await {
+    let (tmpl, hash) = match crd::get_decrypted_kubernetes_object(&decryptor.spec, &ns).await {
         Ok(res) => res,
         Err(err) => {
             // Update the status of the current decryptor
-            DecryptorStatus::new(
+            decryptor.set_status(DecryptorStatus::new(
                 SyncStatus::Error, 
                 Some(err.to_string()), 
                 None, 
-                &object
-            ).update_status(&name, &ns).await?;
+                &decryptor
+            ));
+            decryptor.update_status().await?;
 
             return Ok(())
         }
@@ -62,24 +63,25 @@ async fn parse_update_of_crd(object: Decryptor, client: Client, state: state::St
     let apply_res = apply::apply_rendered_object(tmpl, &client, &ns).await;
     // if an error happened while applying the rendered object. Then set an error to the crd
     if let Err(err) = apply_res {
-        DecryptorStatus::new(
+        decryptor.set_status(DecryptorStatus::new(
             SyncStatus::Unsync, 
             Some(err.to_string()), 
             Some(hash), 
-            &object
-        ).update_status(&name, &ns).await?;
+            &decryptor
+        ));
+        decryptor.update_status().await?;
 
         return Ok(())
     }
 
     // Otherwise update has been successsful so add a sync status
-    DecryptorStatus::new(
+    decryptor.set_status(DecryptorStatus::new(
         SyncStatus::Sync, 
         None, 
         Some(hash), 
-        &object
-    )
-        .update_status(&name, &ns).await?;
+        &decryptor
+    ));
+    decryptor.update_status().await?;
 
     Ok(())
 }
