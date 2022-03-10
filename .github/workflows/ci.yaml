@@ -22,7 +22,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: apply test files for test
         run: |
-          kubectl apply -f gen/crd.yaml
+          kubectl apply -f manifest/crd.yaml
           kubectl apply -f example/test/secret.yaml
           kubectl apply -f example/test/decryptor.yaml
       - name: install clippy
