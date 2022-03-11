@@ -49,10 +49,9 @@ async fn parse_update_of_crd(mut decryptor: Decryptor, client: Client, state: st
         Err(err) => {
             // Update the status of the current decryptor
             decryptor.set_status(DecryptorStatus::new(
-                SyncStatus::Error, 
+                SyncStatus::NotSync, 
                 Some(err.to_string()), 
                 None, 
-                &decryptor
             ));
             decryptor.update_status().await?;
 
@@ -64,10 +63,9 @@ async fn parse_update_of_crd(mut decryptor: Decryptor, client: Client, state: st
     // if an error happened while applying the rendered object. Then set an error to the crd
     if let Err(err) = apply_res {
         decryptor.set_status(DecryptorStatus::new(
-            SyncStatus::Unsync, 
+            SyncStatus::NotSync, 
             Some(err.to_string()), 
             Some(hash), 
-            &decryptor
         ));
         decryptor.update_status().await?;
 
@@ -79,7 +77,6 @@ async fn parse_update_of_crd(mut decryptor: Decryptor, client: Client, state: st
         SyncStatus::Sync, 
         None, 
         Some(hash), 
-        &decryptor
     ));
     decryptor.update_status().await?;
 

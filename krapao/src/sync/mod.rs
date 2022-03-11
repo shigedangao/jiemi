@@ -20,9 +20,7 @@ pub async fn synchronize_repository(state: State) -> Result<(), Error> {
 
         for (_, config) in guard.clone().into_iter() {
             // create an async task which will pull the repository
-            // we don't await them as we don't want to have any control on it.
             // the pull method will exit if the timeout exceed
-            // /!\ @TODO think if we should create a vec of threade and
             // join them altogether...
             tokio::spawn(async move {
                 if let Err(err) = config.pull() {
