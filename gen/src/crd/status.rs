@@ -130,28 +130,27 @@ mod tests {
         
         assert_eq!(status.current.revision, "foo");
         assert_eq!(status.current.error_message, None);
-        assert_eq!(status.history, Some(VecDeque::new()));
+        assert_eq!(status.history, None);
     }
 
     #[test]
     fn expect_to_create_status_with_history() {
         let mut decryptor = get_decryptor();
-        let status = DecryptorStatus::new(
+        decryptor.set_status(DecryptorStatus::new(
             SyncStatus::Sync, 
             None, 
             Some("foo".to_owned()),
-        );
+        ));
 
-        decryptor.status = Some(status);
-
-        let new_status = DecryptorStatus::new(
+        decryptor.set_status(DecryptorStatus::new(
             SyncStatus::Sync, 
             None, 
             Some("bar".to_owned()),
-        );
+        ));
 
-        assert!(new_status.history.is_some());
-        let history = new_status.history.unwrap();
+        let status = decryptor.status.unwrap();
+        assert!(status.history.is_some());
+        let history = status.history.unwrap();
         assert_eq!(history.len(), 1);
     }
 

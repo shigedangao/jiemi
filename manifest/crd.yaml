@@ -191,8 +191,7 @@ spec:
                     status:
                       enum:
                         - Sync
-                        - Unsync
-                        - Error
+                        - NotSync
                       type: string
                   required:
                     - deployed_at
@@ -220,8 +219,7 @@ spec:
                       status:
                         enum:
                           - Sync
-                          - Unsync
-                          - Error
+                          - NotSync
                         type: string
                     required:
                       - deployed_at
