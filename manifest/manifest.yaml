@@ -50,6 +50,13 @@ spec:
         env:
         - name: MODE
           value: "release"
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "250m"
+            memory: "500Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -93,6 +100,13 @@ spec:
         env:
           - name: MODE
             value: release
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "250m"
+            memory: "500Mi"
         volumeMounts:
         - name: data
           mountPath: /root/workspace/repo

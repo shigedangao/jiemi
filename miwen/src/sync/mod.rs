@@ -73,7 +73,6 @@ async fn get_and_apply_template(mut decryptor: Decryptor) -> Result<(), Error> {
                     SyncStatus::Sync, 
                     None, 
                     Some(hash), 
-                    &decryptor
                 ));
                 decryptor
                     .update_status()
@@ -82,10 +81,9 @@ async fn get_and_apply_template(mut decryptor: Decryptor) -> Result<(), Error> {
             },
             Err(err) => {
                 decryptor.set_status(DecryptorStatus::new(
-                    SyncStatus::Error,  
+                    SyncStatus::NotSync,  
                     Some(err.to_string()),  
                     Some(hash),  
-                    &decryptor
                 ));
                 decryptor
                     .update_status()

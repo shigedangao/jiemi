@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use kube::{
@@ -10,6 +12,7 @@ use kube::{
 use status::DecryptorStatus;
 use crate::err::Error;
 use provider::AsyncTryFrom;
+use self::status::Status;
 
 pub mod status;
 pub mod repo;
@@ -105,7 +108,14 @@ impl Decryptor {
     /// # Arguments
     /// * `&mut self` - &Self
     /// * `status` - DecryptorStatus
-    pub fn set_status(&mut self, status: DecryptorStatus) {
+    pub fn set_status(&mut self, mut status: DecryptorStatus) {
+        // get a new history of the status
+        let (history, current_status_id) = self.create_new_status_history();
+        status.history = history;
+        // set other field which come from the decryptor
+        status.current.id = current_status_id + 1;
+        status.current.file_to_decrypt = self.spec.source.file_to_decrypt.to_owned();
+        
         self.status = Some(status);
     }
 
@@ -125,6 +135,20 @@ impl Decryptor {
         ).await?;
 
         Ok(())
+    }
+
+    /// Create a new status history by moving the current status to the list of history of statuses
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
+    pub fn create_new_status_history(&self) -> (Option<VecDeque<Status>>, u64) {
+        match self.status.to_owned() {
+            Some(mut prev) => {
+                prev.add_current_to_history();
+                (prev.history, prev.current.id)
+            },
+            None => (Some(VecDeque::new()), 0_u64)
+        }
     }
 }
 

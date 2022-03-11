@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use schemars::JsonSchema;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
-use super::Decryptor;
 
 // constant
 const MAX_QUEUE_SIZE: usize = 10;
@@ -20,25 +19,30 @@ const MAX_QUEUE_SIZE: usize = 10;
 ///         Status:  Sync
 ///     History:
 ///         List of previous statuses...
-#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Default)]
 pub struct DecryptorStatus {
     pub current: Status,
-    history: Option<VecDeque<Status>>,
+    pub history: Option<VecDeque<Status>>,
 }
 
 #[derive(Debug, JsonSchema, Clone, Serialize, Deserialize, PartialEq)]
 pub enum SyncStatus {
     Sync,
-    Unsync,
-    Error
+    NotSync
 }
 
-#[derive(Debug, JsonSchema, Clone, Serialize, Deserialize, PartialEq)]
+impl Default for SyncStatus {
+    fn default() -> Self {
+        SyncStatus::Sync
+    }
+}
+
+#[derive(Debug, JsonSchema, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Status {
     deployed_at: String,
-    id: u64,
+    pub id: u64,
     pub revision: String,
-    file_to_decrypt: String,
+    pub file_to_decrypt: String,
     status: SyncStatus,
     error_message: Option<String>
 }
@@ -49,32 +53,23 @@ impl DecryptorStatus {
     /// # Arguments
     /// * `status` - SyncStatus
     /// * `err` - Option<String>
-    /// * `revision` - Option<String>
-    /// * `current` - Decryptor
+    /// * `revision` - String
     pub fn new(
         status: SyncStatus,
         err: Option<String>,
         revision: Option<String>,
-        current: &Decryptor,
     ) -> Self {
-        let (history, previous_id) = match current.status.to_owned() {
-            Some(mut prev) => {
-                prev.add_current_to_history();
-                (prev.history, prev.current.id)
-            },
-            None => (Some(VecDeque::new()), 0_u64)
+        let status = Status {
+            deployed_at: Utc::now().to_rfc3339(),
+            revision: revision.unwrap_or_default(),
+            status,
+            error_message: err,
+            ..Default::default()
         };
 
-        let file_to_decrypt = current.spec.source.file_to_decrypt.to_owned();
         DecryptorStatus {
-            current: Status::new(
-                status,
-                revision.unwrap_or_default(),
-                file_to_decrypt, 
-                err,
-                previous_id
-            ),
-            history
+            current: status,
+            ..Default::default()
         }
     }
 
@@ -83,7 +78,7 @@ impl DecryptorStatus {
     /// 
     /// # Arguments
     /// * `&mut self` - Self
-    fn add_current_to_history(&mut self) {
+    pub fn add_current_to_history(&mut self) {
         if let Some(queue) = self.history.as_mut() {
             if queue.len() > MAX_QUEUE_SIZE {
                 queue.pop_front();
@@ -94,39 +89,13 @@ impl DecryptorStatus {
     }
 }
 
-impl Status {
-    /// Create a new Status
-    /// 
-    /// # Arguments
-    /// * `status` - SyncStatus
-    /// * `revision` - String
-    /// * `file_to_decrypt` - String
-    /// * `err` - Option<String>
-    /// * `previous_id` - u64
-    fn new(
-        status: SyncStatus,
-        revision: String,
-        file_to_decrypt: String,
-        err: Option<String>,
-        previous_id: u64
-    ) -> Self {
-        Status {
-            deployed_at: Utc::now().to_rfc3339(),
-            id: previous_id + 1,
-            revision,
-            file_to_decrypt,
-            status,
-            error_message: err
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use kube::core::ObjectMeta;
     use kube::{Client, Api};
     use crate::crd::{DecryptorSpec, Provider, Source};
     use crate::crd::repo::Repository;
+    use super::super::Decryptor;
     use super::*;
 
     fn get_decryptor() -> Decryptor {
@@ -153,42 +122,35 @@ mod tests {
 
     #[test]
     fn expect_to_create_status_wo_history() {
-        let decryptor = get_decryptor();
         let status = DecryptorStatus::new(
             SyncStatus::Sync, 
             None, 
             Some("foo".to_owned()),
-            &decryptor
         );
         
-        assert_eq!(status.current.id, 1);
         assert_eq!(status.current.revision, "foo");
-        assert_eq!(status.current.file_to_decrypt, "foo");
         assert_eq!(status.current.error_message, None);
-        assert_eq!(status.history, Some(VecDeque::new()));
+        assert_eq!(status.history, None);
     }
 
     #[test]
     fn expect_to_create_status_with_history() {
         let mut decryptor = get_decryptor();
-        let status = DecryptorStatus::new(
+        decryptor.set_status(DecryptorStatus::new(
             SyncStatus::Sync, 
             None, 
             Some("foo".to_owned()),
-            &decryptor
-        );
+        ));
 
-        decryptor.status = Some(status);
-
-        let new_status = DecryptorStatus::new(
+        decryptor.set_status(DecryptorStatus::new(
             SyncStatus::Sync, 
             None, 
             Some("bar".to_owned()),
-            &decryptor
-        );
+        ));
 
-        assert!(new_status.history.is_some());
-        let history = new_status.history.unwrap();
+        let status = decryptor.status.unwrap();
+        assert!(status.history.is_some());
+        let history = status.history.unwrap();
         assert_eq!(history.len(), 1);
     }
 
@@ -199,10 +161,9 @@ mod tests {
 
         let mut decryptor = api.get("miwen-pgp-test-decryptor").await.unwrap();
         let status = DecryptorStatus::new(
-            SyncStatus::Unsync, 
+            SyncStatus::NotSync, 
             None, 
             Some("foo".to_owned()),
-            &decryptor
         );
         
         decryptor.set_status(status);
