@@ -1,4 +1,4 @@
-# Jiemi (WIP)
+# Jiemi
 
 [![tests](https://github.com/shigedangao/jiemi/actions/workflows/ci.yaml/badge.svg)](https://github.com/shigedangao/jiemi/actions/workflows/ci.yaml)
 [![build](https://github.com/shigedangao/jiemi/actions/workflows/docker.yaml/badge.svg)](https://github.com/shigedangao/jiemi/actions/workflows/docker.yaml)

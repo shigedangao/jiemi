@@ -7,7 +7,7 @@ use kube::{
     CustomResourceExt,
     Client,
     Api,
-    api::PostParams
+    api::{Patch, PatchParams},
 };
 use status::DecryptorStatus;
 use crate::err::Error;
@@ -123,15 +123,15 @@ impl Decryptor {
     /// 
     /// # Arguments
     /// * `&self` - &Self
-    pub async fn update_status(&self) -> Result<(), Error> {
+    pub async fn update_status(&mut self) -> Result<(), Error> {
         let (name, _, ns) = self.get_metadata_info()?;
         let client = Client::try_default().await?;
         let api = Api::<Decryptor>::namespaced(client.clone(), &ns);
-        
-        api.replace_status(
+
+        api.patch_status(
             &name,
-            &PostParams::default(),
-            serde_json::to_vec(&self)?
+            &PatchParams::default(),
+            &Patch::Merge(&self.status),
         ).await?;
 
         Ok(())
