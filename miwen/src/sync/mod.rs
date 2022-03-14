@@ -6,6 +6,7 @@ use gen::crd::status::{DecryptorStatus, SyncStatus};
 use gen::crd::Decryptor;
 use tokio::time::sleep;
 use std::time::Duration;
+use futures::future::try_join_all;
 use crate::err::Error;
 use crate::client::crd;
 use crate::watcher::apply;
@@ -38,10 +39,17 @@ async fn sync_encrypted_file_with_git() -> Result<(), Error> {
     let crds = list_crd(client.clone()).await?;
 
     // for each crd we're going to check whenever the crd is synced with the latest
+    let mut fut = Vec::new();
     for crd in crds {
-        tokio::spawn(get_and_apply_template(crd));
+        fut.push(get_and_apply_template(crd));
     }
 
+    // Joining the futures better than spawning a thread for each crd
+    let res = try_join_all(fut).await;
+    if let Err(err) = res {
+        return Err(err);
+    }
+    
     Ok(())
 }
 
