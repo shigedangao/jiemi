@@ -5,7 +5,7 @@ use crate::err::Error;
 ///
 /// # Arguments
 /// * `base` - &ByteString
-pub fn decode_byte(base: &ByteString) -> Result<String, Error> {
+pub(crate) fn decode_byte(base: &ByteString) -> Result<String, Error> {
     let value = String::from_utf8(base.0.clone())
         .map_err(|err| Error::DecodedBytes(err.to_string()))?;
 
