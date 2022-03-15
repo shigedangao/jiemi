@@ -96,7 +96,7 @@ metadata:
 spec:
   provider:
     gcp:
-      service_account:
+      serviceAccount:
         secretName: <secret which contains the json key>
         key: <key name>
   source:
@@ -116,10 +116,10 @@ metadata:
 spec:
   provider:
     aws:
-      key_id:
+      keyId:
         secretName: <secret which contains the aws_access_key_id>
         key: <key name>
-      access_key:
+      accessKey:
         secretName: <secret which contains the aws_secret_access_key>
         key: <key name>
       region:

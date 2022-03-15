@@ -46,7 +46,7 @@ spec:
       serviceAccountName: jiemi-account
       containers:
       - name: controller
-        image: marci/miwen:0.1
+        image: marci/miwen:0.1.1
         env:
         - name: MODE
           value: "release"
@@ -93,7 +93,7 @@ spec:
     spec:
       containers:
       - name: repository
-        image: marci/krapao:0.1
+        image: marci/krapao:0.1.1
         ports:
         - containerPort: 50208
           name: rpc
