@@ -15,12 +15,15 @@ pub enum ProviderList {
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
 pub struct GcpCredentials {
+    #[serde(rename = "serviceAccount")]
     pub service_account: GenericConfig
 }
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
 pub struct AwsCredentials {
+    #[serde(rename = "keyId")]
     pub key_id: GenericConfig,
+    #[serde(rename = "accessKey")]
     pub access_key: GenericConfig,
     pub region: GenericConfig
 }

@@ -26,7 +26,7 @@ spec:
                     aws:
                       nullable: true
                       properties:
-                        access_key:
+                        accessKey:
                           properties:
                             key:
                               nullable: true
@@ -38,7 +38,7 @@ spec:
                               nullable: true
                               type: string
                           type: object
-                        key_id:
+                        keyId:
                           properties:
                             key:
                               nullable: true
@@ -63,14 +63,14 @@ spec:
                               type: string
                           type: object
                       required:
-                        - access_key
-                        - key_id
+                        - accessKey
+                        - keyId
                         - region
                       type: object
                     gcp:
                       nullable: true
                       properties:
-                        service_account:
+                        serviceAccount:
                           properties:
                             key:
                               nullable: true
@@ -83,7 +83,7 @@ spec:
                               type: string
                           type: object
                       required:
-                        - service_account
+                        - serviceAccount
                       type: object
                     pgp:
                       nullable: true

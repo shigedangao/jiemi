@@ -18,7 +18,7 @@ impl fmt::Display for Error {
         match self {
             Error::KubeAuthentication => write!(f, "Unable to authenticate with Kubernetes"),
             Error::KubeRuntime => write!(f, "Unexpected error with the controller"),
-            Error::Generator(msg) => write!(f, "Error encountered with the gen {msg}"),
+            Error::Generator(msg) => write!(f, "Error encountered while processing the Decryptor spec: {msg}"),
             Error::Watch(msg) => write!(f, "Error while watching the decryptor resource {msg}"),
             Error::Serialize => write!(f, "Error while serializing the Status"),
             Error::Rpc(msg) => write!(f, "Error while communicating with rpc server {msg}"),
