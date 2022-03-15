@@ -105,7 +105,8 @@ mod tests {
                 provider: Provider {
                     gcp: None,
                     aws: None,
-                    pgp: None
+                    pgp: None,
+                    vault: None
                 },
                 source: Source {
                     repository: Repository {

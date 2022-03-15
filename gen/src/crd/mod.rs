@@ -37,7 +37,8 @@ pub struct DecryptorSpec {
 pub struct Provider {
     gcp: Option<provider::GcpCredentials>,
     aws: Option<provider::AwsCredentials>,
-    pgp: Option<provider::PgpCredentials>
+    pgp: Option<provider::PgpCredentials>,
+    vault: Option<provider::VaultCredentials>
 }
 
 
@@ -79,6 +80,10 @@ impl Provider {
         if let Some(pgp) = self.pgp.clone() {
             let list = pgp.convert(client, ns).await?;
             return Ok(list);
+        }
+
+        if self.vault.is_some() {
+            return Ok(provider::ProviderList::Vault)
         }
 
         Ok(provider::ProviderList::None)
@@ -173,7 +178,8 @@ mod tests {
                 }
             }),
             aws: None,
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -196,7 +202,8 @@ mod tests {
                     literal: Some("pgp-credentials".to_owned()),
                     ..Default::default()
                 }
-            })
+            }),
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -227,7 +234,8 @@ mod tests {
                     ..Default::default()
                 }
             }),
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -249,7 +257,8 @@ mod tests {
         let provider = Provider {
             gcp: None,
             aws: None,
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;

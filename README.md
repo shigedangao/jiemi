@@ -152,3 +152,22 @@ spec:
     fileToDecrypt: <path of file to decrypt>
     sopsPath: <filepath to .sops.yaml file>
 ```
+
+### Vault
+
+> ⚠️ The http address of the vault must be specified in the .sops.yaml file
+
+```yaml
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: vault-decryptor
+spec:
+  provider:
+    vault: {}
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: vault/encrypted.yaml
+    sopsPath: vault/.sops.yaml
+```

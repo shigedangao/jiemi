@@ -4,11 +4,9 @@ metadata:
   name: vault-decryptor
 spec:
   provider:
-    vault:
-      address:
-        literal: <>
+    vault: {}
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git
-    fileToDecrypt: test/foo.enc.yaml
-    sopsPath: test/.sops.yaml
+    fileToDecrypt: vault/encrypted.yaml
+    sopsPath: vault/.sops.yaml

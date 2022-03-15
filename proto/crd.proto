@@ -29,9 +29,7 @@ message Pgp {
     string private_key = 1;
 }
 
-message Vault {
-    optional string address = 1;
-}
+message Vault {}
 
 message Response {
     string resource = 1;

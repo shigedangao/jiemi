@@ -56,12 +56,10 @@ impl Payload {
                     private_key: k
                 })
             },
-            ProviderList::Vault(addr) => {
-                payload.vault = Some(Vault {
-                    address: addr
-                })
+            ProviderList::Vault => {
+                payload.vault = Some(Vault::default())
             },
-            ProviderList::None => {}
+            ProviderList::None => error!("No provider has been founded to decrypt the encrypted file")
         };
 
         Ok(payload)

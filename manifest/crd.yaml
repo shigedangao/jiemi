@@ -103,6 +103,9 @@ spec:
                       required:
                         - privateKey
                       type: object
+                    vault:
+                      nullable: true
+                      type: object
                   type: object
                 source:
                   properties:

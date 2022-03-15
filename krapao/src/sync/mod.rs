@@ -7,14 +7,13 @@ const THREAD_SLEEP: u64 = 180;
 
 /// Synchronize the list of repository which is stored in the State
 /// Synchronization happened every 3min.
-/// Each repo is updated in it's own thread
+/// Each repo is updated in it's own thread. Sync is also done at the startup of krapao.
+/// This is useful in case if the statefulset is restarting
 /// 
 /// # Arguments
 /// * `state` - State
 pub async fn synchronize_repository(state: State) -> Result<(), Error> {
     loop {
-        // sleep is executed first to avoid keeping the guard too much time...
-        sleep(Duration::from_secs(THREAD_SLEEP)).await;
         let guard = state.lock()
             .map_err(|err| Error::Sync(err.to_string()))?;
 
@@ -28,5 +27,9 @@ pub async fn synchronize_repository(state: State) -> Result<(), Error> {
                 }
             });
         }
+
+        // droping the mutex before sleeping the task to avoid creating deadlock
+        drop(guard);
+        sleep(Duration::from_secs(THREAD_SLEEP)).await;
     }
 }

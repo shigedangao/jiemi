@@ -10,7 +10,7 @@ pub enum ProviderList {
     Gcp(String),
     Aws(String, String, String),
     Pgp(String),
-    Vault(Option<String>),
+    Vault,
     None
 }
 
@@ -36,9 +36,7 @@ pub struct PgpCredentials {
 }
 
 #[derive(Debug, JsonSchema, Serialize, Deserialize, Clone)]
-pub(crate) struct VaultCredentials {
-    pub address: Option<GenericConfig>
-} 
+pub(crate) struct VaultCredentials {} 
 
 #[async_trait]
 pub(crate) trait AsyncTryFrom {
@@ -90,21 +88,5 @@ impl AsyncTryFrom for PgpCredentials {
         let key = self.private_key.get_value(&client, ns).await?;
 
         Ok(ProviderList::Pgp(key))
-    }
-}
-
-#[async_trait]
-impl AsyncTryFrom for VaultCredentials {
-    type Error = Error;
-    type Output = ProviderList;
-
-    async fn convert(&self, client: Client, ns: &str) -> Result<Self::Output, Self::Error> {
-        if let Some(addr) = self.address.as_ref() {
-            let address = addr.get_value(&client, ns).await?;
-            
-            Ok(ProviderList::Vault(Some(address)))
-        } else {
-            Ok(ProviderList::Vault(None))
-        }
     }
 }
