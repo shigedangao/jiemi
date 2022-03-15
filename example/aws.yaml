@@ -5,10 +5,10 @@ metadata:
 spec:
   provider:
     aws:
-      key_id:
+      keyId:
         secretName: aws-secret
         key: id
-      access_key:
+      accessKey:
         secretName: aws-secret
         key: access
       region:

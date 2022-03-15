@@ -129,7 +129,6 @@ pub async fn boostrap_watcher(state: state::State) -> Result<(), Error> {
     let mut watcher = watcher(api, ListParams::default()).boxed();
 
     // Event to listen for create / modified event on the Decryptor resources
-    // let mut apply_events = try_flatten_applied(watcher).boxed_local();
     while let Some(event) = watcher.try_next().await? {
         let state = state.clone();
         let client = client.clone();

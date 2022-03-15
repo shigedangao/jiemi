@@ -5,7 +5,7 @@ metadata:
 spec:
   provider:
     gcp:
-      service_account:
+      serviceAccount:
         secretName: gcp-secret
         key: mask-336418-5d828a98a0a8.json
   source:
