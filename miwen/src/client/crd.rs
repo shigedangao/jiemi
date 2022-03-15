@@ -10,7 +10,8 @@ use self::proto::{
     Payload,
     Gcp,
     Aws,
-    Pgp
+    Pgp,
+    Vault
 };
 use super::REQUEST_TIMEOUT;
 
@@ -54,7 +55,12 @@ impl Payload {
                 payload.pgp = Some(Pgp {
                     private_key: k
                 })
-            }
+            },
+            ProviderList::Vault(addr) => {
+                payload.vault = Some(Vault {
+                    address: addr
+                })
+            },
             ProviderList::None => {}
         };
 
