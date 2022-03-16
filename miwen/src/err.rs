@@ -5,7 +5,7 @@ use gen::err::Error as GenError;
 #[derive(Debug)]
 pub enum Error {
     KubeAuthentication,
-    KubeRuntime,
+    KubeRuntime(String),
     Generator(String),
     Watch(String),
     Serialize,
@@ -17,7 +17,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::KubeAuthentication => write!(f, "Unable to authenticate with Kubernetes"),
-            Error::KubeRuntime => write!(f, "Unexpected error with the controller"),
+            Error::KubeRuntime(msg) => write!(f, "Unexpected error with the controller: {msg}"),
             Error::Generator(msg) => write!(f, "Error encountered while processing the Decryptor spec: {msg}"),
             Error::Watch(msg) => write!(f, "Error while watching the decryptor resource {msg}"),
             Error::Serialize => write!(f, "Error while serializing the Status"),
@@ -33,7 +33,7 @@ impl From<KubeError> for Error {
     fn from(err: KubeError) -> Self {
         match err {
             KubeError::Auth(_) => Error::KubeAuthentication,
-            _ => Error::KubeRuntime
+            _ => Error::KubeRuntime(err.to_string())
         }
     }
 }

@@ -29,7 +29,13 @@ struct GvkWrapper {
 
 impl GvkWrapper {
     /// Retrieve the GVK from the wrapper
+    /// 
+    /// # Arguments
+    /// * `&self` - &Self
     fn get_gkv(&self) -> GroupVersionKind {
+        // version is defined like so v1/deployment
+        // if we have no slash, then we use group as "". "" represent the core api
+        // version -> group
         let splitted_group = self.api_version.split_once(API_GROUP_SPLIT);
         match splitted_group {
             Some((group, version)) => GroupVersionKind {
@@ -38,7 +44,6 @@ impl GvkWrapper {
                 kind: self.kind.clone()
             },
             None => GroupVersionKind {
-                // default group is core and does not have a name...
                 group: "".to_owned(),
                 version: self.api_version.clone(),
                 kind: self.kind.clone()
@@ -83,7 +88,7 @@ async fn patch_resource(api: Api<DynamicObject>, name: &str, patch: DynamicObjec
             Ok(())
         },
         Err(err) => {
-            error!("{err:?}");
+            error!("❌ Resource could not be synchronize: {err:?}");
             Err(Error::from(err))
         }
     }

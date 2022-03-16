@@ -132,11 +132,15 @@ impl Decryptor {
         let (name, _, ns) = self.get_metadata_info()?;
         let client = Client::try_default().await?;
         let api = Api::<Decryptor>::namespaced(client.clone(), &ns);
+        
+        let status = serde_json::json!({
+            "status": self.status
+        });
 
         api.patch_status(
             &name,
             &PatchParams::default(),
-            &Patch::Merge(&self.status),
+            &Patch::Merge(&status),
         ).await?;
 
         Ok(())
