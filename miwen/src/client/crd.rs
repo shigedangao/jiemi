@@ -42,7 +42,7 @@ impl Payload {
 
         match credentials {
             ProviderList::Gcp(credentials) => {
-                payload.gcp = Some(Gcp { credentials})
+                payload.gcp = Some(Gcp { credentials } )
             },
             ProviderList::Aws(k, i, r) => {
                 payload.aws = Some(Aws {
@@ -51,13 +51,11 @@ impl Payload {
                     region: r
                 })
             },
-            ProviderList::Pgp(k) => {
-                payload.pgp = Some(Pgp {
-                    private_key: k
-                })
+            ProviderList::Pgp(private_key) => {
+                payload.pgp = Some(Pgp { private_key } )
             },
-            ProviderList::Vault => {
-                payload.vault = Some(Vault::default())
+            ProviderList::Vault(token) => {
+                payload.vault = Some(Vault { token } )
             },
             ProviderList::None => error!("No provider has been founded to decrypt the encrypted file")
         };

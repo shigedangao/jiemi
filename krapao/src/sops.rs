@@ -30,10 +30,10 @@ pub fn decrypt_file(config: &GitConfig, target_file_path: &str, sops_file_path: 
         
         Ok(stdout)
     } else {
-        error!("Error while decrypting with SOPS {:?}", cmd.stderr);
         let stderr = String::from_utf8(cmd.stderr)
             .map_err(|err| Error::Sops(err.to_string()))?;
         
+        error!("Error while decrypting with SOPS {:?}", stderr);
         Err(Error::Sops(stderr))
     }
 }

@@ -4,6 +4,7 @@ use crate::server::service::crd::proto::Payload;
 pub mod gcp;
 pub mod aws;
 pub mod pgp;
+pub mod vault;
 
 // Constant
 const MISSING_PROVIDER_ERR: &str = "Missing provider";
@@ -13,7 +14,7 @@ pub enum Provider {
     Gcp(String),
     Aws(String, String, String),
     Pgp(String),
-    Vault,
+    Vault(String),
     None
 }
 
@@ -39,8 +40,8 @@ impl Provider {
             return Provider::Pgp(key.private_key)
         }
 
-        if payload.vault.is_some() {
-            return Provider::Vault
+        if let Some(vault) = payload.vault.clone() {
+            return Provider::Vault(vault.token)
         }
 
         Provider::None
@@ -55,7 +56,7 @@ impl Provider {
             Provider::Gcp(credentials) => gcp::set_authentication_file_for_gcp(credentials),
             Provider::Aws(id, key, region) => aws::authenticate(id, key, region),
             Provider::Pgp(key) => pgp::authenticate_with_pgp(key),
-            Provider::Vault => Ok(()),
+            Provider::Vault(token) => vault::set_vault_token(token),
             Provider::None => Err(Error::ProviderAuth(MISSING_PROVIDER_ERR.to_owned()))
         }
     }

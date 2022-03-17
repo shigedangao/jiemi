@@ -4,7 +4,9 @@ metadata:
   name: vault-decryptor
 spec:
   provider:
-    vault: {}
+    vault:
+      token:
+        literal: ""
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git

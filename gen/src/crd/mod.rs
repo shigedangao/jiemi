@@ -82,8 +82,9 @@ impl Provider {
             return Ok(list);
         }
 
-        if self.vault.is_some() {
-            return Ok(provider::ProviderList::Vault)
+        if let Some(vault) = self.vault.clone() {
+            let list = vault.convert(client, ns).await?;
+            return Ok(list);
         }
 
         Ok(provider::ProviderList::None)
