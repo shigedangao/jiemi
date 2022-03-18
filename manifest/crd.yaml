@@ -105,6 +105,21 @@ spec:
                       type: object
                     vault:
                       nullable: true
+                      properties:
+                        token:
+                          properties:
+                            key:
+                              nullable: true
+                              type: string
+                            literal:
+                              nullable: true
+                              type: string
+                            secretName:
+                              nullable: true
+                              type: string
+                          type: object
+                      required:
+                        - token
                       type: object
                   type: object
                 source:
