@@ -6,7 +6,7 @@ spec:
   provider:
     vault:
       token:
-        literal: ""
+        literal: <vault token>
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git
