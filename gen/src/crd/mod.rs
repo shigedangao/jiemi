@@ -37,7 +37,8 @@ pub struct DecryptorSpec {
 pub struct Provider {
     gcp: Option<provider::GcpCredentials>,
     aws: Option<provider::AwsCredentials>,
-    pgp: Option<provider::PgpCredentials>
+    pgp: Option<provider::PgpCredentials>,
+    vault: Option<provider::VaultCredentials>
 }
 
 
@@ -78,6 +79,11 @@ impl Provider {
 
         if let Some(pgp) = self.pgp.clone() {
             let list = pgp.convert(client, ns).await?;
+            return Ok(list);
+        }
+
+        if let Some(vault) = self.vault.clone() {
+            let list = vault.convert(client, ns).await?;
             return Ok(list);
         }
 
@@ -127,11 +133,15 @@ impl Decryptor {
         let (name, _, ns) = self.get_metadata_info()?;
         let client = Client::try_default().await?;
         let api = Api::<Decryptor>::namespaced(client.clone(), &ns);
+        
+        let status = serde_json::json!({
+            "status": self.status
+        });
 
         api.patch_status(
             &name,
             &PatchParams::default(),
-            &Patch::Merge(&self.status),
+            &Patch::Merge(&status),
         ).await?;
 
         Ok(())
@@ -173,7 +183,8 @@ mod tests {
                 }
             }),
             aws: None,
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -196,7 +207,8 @@ mod tests {
                     literal: Some("pgp-credentials".to_owned()),
                     ..Default::default()
                 }
-            })
+            }),
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -227,7 +239,8 @@ mod tests {
                     ..Default::default()
                 }
             }),
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;
@@ -249,7 +262,8 @@ mod tests {
         let provider = Provider {
             gcp: None,
             aws: None,
-            pgp: None
+            pgp: None,
+            vault: None
         };
 
         let list = provider.get_credentials("default").await;

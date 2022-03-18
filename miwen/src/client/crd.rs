@@ -10,7 +10,8 @@ use self::proto::{
     Payload,
     Gcp,
     Aws,
-    Pgp
+    Pgp,
+    Vault
 };
 use super::REQUEST_TIMEOUT;
 
@@ -41,7 +42,7 @@ impl Payload {
 
         match credentials {
             ProviderList::Gcp(credentials) => {
-                payload.gcp = Some(Gcp { credentials})
+                payload.gcp = Some(Gcp { credentials } )
             },
             ProviderList::Aws(k, i, r) => {
                 payload.aws = Some(Aws {
@@ -50,12 +51,13 @@ impl Payload {
                     region: r
                 })
             },
-            ProviderList::Pgp(k) => {
-                payload.pgp = Some(Pgp {
-                    private_key: k
-                })
-            }
-            ProviderList::None => {}
+            ProviderList::Pgp(private_key) => {
+                payload.pgp = Some(Pgp { private_key } )
+            },
+            ProviderList::Vault(token) => {
+                payload.vault = Some(Vault { token } )
+            },
+            ProviderList::None => error!("No provider has been founded to decrypt the encrypted file")
         };
 
         Ok(payload)

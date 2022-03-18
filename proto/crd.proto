@@ -12,6 +12,7 @@ message Payload {
     optional Gcp gcp = 4;
     optional Aws aws = 5;
     optional Pgp pgp = 6;
+    optional Vault vault = 7;
 }
 
 message Gcp {
@@ -26,6 +27,10 @@ message Aws {
 
 message Pgp {
     string private_key = 1;
+}
+
+message Vault {
+    string token = 1;
 }
 
 message Response {

@@ -1,0 +1,14 @@
+apiVersion: jiemi.cr/v1alpha1
+kind: Decryptor
+metadata:
+  name: vault-decryptor
+spec:
+  provider:
+    vault:
+      token:
+        literal: <vault token>
+  source:
+    repository:
+      url: https://github.com/shigedangao/gogo.git
+    fileToDecrypt: vault/encrypted.yaml
+    sopsPath: vault/.sops.yaml

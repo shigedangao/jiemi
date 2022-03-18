@@ -486,7 +486,7 @@ dependencies = [
 
 [[package]]
 name = "gen"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "base64",
@@ -760,7 +760,7 @@ dependencies = [
 
 [[package]]
 name = "krapao"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "color-eyre",
  "config",
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "miwen"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "color-eyre",
  "env_logger",

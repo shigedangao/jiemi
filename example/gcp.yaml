@@ -11,5 +11,5 @@ spec:
   source:
     repository:
       url: https://github.com/shigedangao/gogo.git
-    fileToDecrypt: test/foo.enc.yaml
-    sopsPath: test/.sops.yaml
+    fileToDecrypt: gcp/encrypted.yaml
+    sopsPath: gcp/.sops.yaml
